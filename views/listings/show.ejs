@@ -4,8 +4,9 @@
 
       <div class="row">
         <div class="col-md-6">
-          <img src="<%= listing.image.url %>" alt="" class="img-fluid rounded">
+          <img src="<%= listing.image.url %>" alt="" class=" img-fluid   rounded show-image">
         </div>
+        <!-- img-fluid -->
 
         <div class="col-md-6">
           <div class="details">
@@ -70,17 +71,19 @@
     <div class="row">
       <% for(review of listing.reviews){ %>
         
-          <div class="card col-5 ms-3 mb-3">
-            <div class="card-body oneview ">
+          <div class="card col-5 ms-3 mb-3 review">
+            <div class="card-body oneview review ">
               <div class="card-title pad">@<%=  review.author.username%></div>
                 <p class="card-text pad"><%= review.comment %></p>
+                <div class="star">
+                  <p  class="starability-result pad size" data-rating= <%= review.rating %>>
+                    Rated: 3 stars
+                  </p>
+                </div>
                 
-                <p class="starability-result" data-rating= <%= review.rating %>>
-                  Rated: 3 stars
-                </p>
                <% if(curruser && curruser._id.equals(listing.owner._id)){  %> 
                <form class="mt-3" method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
-                <button class="btn btn-sm btn-dark ml-1 mb-1 pad" type="submit">Delete</button>
+                <button style="margin-bottom: 1rem;" class="btn btn-sm btn-dark pad" type="submit">Delete</button>
               </form>
               <% } %>
                 

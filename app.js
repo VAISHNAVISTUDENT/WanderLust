@@ -11,8 +11,8 @@ const Listing = require("./models/listing.js");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
-// const dbUrl = process.env.ATLASDB_URL;
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const dbUrl = process.env.ATLASDB_URL;
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const {listingSchema} = require("./schema.js");
@@ -37,7 +37,7 @@ app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname,"public")));
 
 const store = MongoStore.create({
-  mongoUrl: MONGO_URL,
+  mongoUrl: dbUrl,
   crypto: {
     secret:process.env.SECRET_CODE,
   },
@@ -72,7 +72,7 @@ main()
   });
 
 async function main() {
-  await mongoose.connect(MONGO_URL);
+  await mongoose.connect(dbUrl);
 }
 
 

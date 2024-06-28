@@ -158,7 +158,7 @@
     <h4 ml-5 style="text-align: center; color: #ff385c;">Leave a Review:</h4>
       <form action="/listings/<%= listing._id %>/reviews" method="post" class=" needs-validation" novalidate >
           <div class="rating-stars mb-3 mt-3">
-              <label for="rating" class="form-label">Rating</label>
+              <label for="rating" class="form-label"><h4>Rating</h4>Rating</label>
               <fieldset class="starability-slot">
                   <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
             <input type="radio" id="first-rate1" name="review[rating]" value="1" />
@@ -174,7 +174,7 @@
               </fieldset>
           </div>
           <div class="rating-comments">
-              <label for="comment">Reviews:</label>
+              <label for="comment">t <h4>Commen</h4></label>
               <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
               <div class="invalid-feedback">please submit a valid comment...</div>
           </div>

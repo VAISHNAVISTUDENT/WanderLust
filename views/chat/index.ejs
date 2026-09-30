@@ -1,0 +1,274 @@
+<% layout("/layouts/boilerplate") %>
+
+<style>
+    :root {
+        --rose: #ff385c;
+        --rose-dark: #e31c5f;
+        --ink: #222;
+        --muted: #6a6a6a;
+        --line: #dddddd;
+        --soft: #f7f7f7;
+    }
+
+    .chat-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem;
+    }
+
+    .chat-title {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -.02em;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ---------- LIST ---------- */
+    .conversation-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .conversation {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem .9rem;
+        text-decoration: none;
+        color: var(--ink);
+        border-bottom: 1px solid var(--line);
+        border-radius: 14px;
+        transition: background .15s ease;
+    }
+
+    .conversation:last-child { border-bottom: 0; }
+
+    .conversation:hover {
+        background: var(--soft);
+        color: var(--ink);
+    }
+
+    .conversation-avatar,
+    .conversation-avatar-fallback {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        flex: none;
+    }
+
+    .conversation-avatar { object-fit: cover; }
+
+    .conversation-avatar-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ink);
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .conversation-main {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .conversation-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: .75rem;
+    }
+
+    .conversation-name {
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .conversation-time {
+        color: var(--muted);
+        font-size: .78rem;
+        white-space: nowrap;
+    }
+
+    .conversation-message {
+        color: var(--muted);
+        font-size: .92rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 560px;
+    }
+
+    .conversation.unread .conversation-message {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .conversation-listing {
+        font-size: .8rem;
+        color: var(--muted);
+        margin-top: .15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .conversation-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        object-fit: cover;
+        background: var(--soft);
+        flex: none;
+    }
+
+    .unread-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--rose);
+        flex: none;
+    }
+
+    /* ---------- EMPTY ---------- */
+    .empty-chat {
+        text-align: center;
+        padding: 4rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        color: var(--muted);
+    }
+
+    .empty-chat i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--rose);
+    }
+
+    .empty-chat h5 { color: var(--ink); }
+
+    .btn-rose {
+        display: inline-block;
+        padding: .75rem 1.5rem;
+        background: linear-gradient(to right, var(--rose), var(--rose-dark));
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 0;
+    }
+
+    .btn-rose:hover {
+        color: #fff;
+        filter: brightness(.95);
+    }
+
+    /* ---------- MOBILE ---------- */
+    @media (max-width: 576px) {
+        .chat-page { padding-top: 1rem; }
+
+        .chat-title { font-size: 1.6rem; }
+
+        .conversation { padding: .9rem .4rem; }
+
+        .conversation-avatar,
+        .conversation-avatar-fallback {
+            width: 48px;
+            height: 48px;
+        }
+
+        .conversation-thumb { display: none; }
+    }
+</style>
+
+
+<div class="chat-page">
+
+    <h1 class="chat-title">Messages</h1>
+
+    <% if (conversations.length === 0) { %>
+
+        <div class="empty-chat">
+            <i class="fa-regular fa-comments"></i>
+            <h5 class="fw-semibold">No messages yet</h5>
+            <p class="mb-3">
+                When you message a host, your conversations will appear here.
+            </p>
+            <a href="/listings" class="btn-rose">Explore listings</a>
+        </div>
+
+    <% } else { %>
+
+        <div class="conversation-list">
+
+            <% conversations.forEach(conversation => {
+
+                const otherUser = conversation.participants.find(
+                    user => String(user._id) !== String(curruser._id)
+                );
+
+                const otherName = otherUser ? otherUser.username : "User";
+                const firstLetter = otherName ? otherName.charAt(0).toUpperCase() : "?";
+
+                const last = conversation.lastMessage;
+                const lastMessage = last ? last.content : "Start a conversation";
+
+                // Unread = last message is from the other person and not yet read
+                const lastSender = last && last.sender
+                    ? String(last.sender._id || last.sender)
+                    : null;
+                const unread = !!last
+                    && last.read === false
+                    && lastSender !== String(curruser._id);
+
+                const listingTitle = conversation.listing ? conversation.listing.title : "Listing";
+                const listingImg = conversation.listing && conversation.listing.image
+                    ? conversation.listing.image.url
+                    : "";
+
+                const time = conversation.updatedAt
+                    ? new Date(conversation.updatedAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short"
+                    })
+                    : "";
+            %>
+
+                <a href="/chat/<%= conversation._id %>"
+                   class="conversation <%= unread ? 'unread' : '' %>">
+
+                    <% if (otherUser && otherUser.profilePhoto && otherUser.profilePhoto.url) { %>
+                        <img src="<%= otherUser.profilePhoto.url %>"
+                             alt="<%= otherName %>"
+                             class="conversation-avatar">
+                    <% } else { %>
+                        <div class="conversation-avatar-fallback"><%= firstLetter %></div>
+                    <% } %>
+
+                    <div class="conversation-main">
+                        <div class="conversation-top">
+                            <div class="conversation-name"><%= otherName %></div>
+                            <div class="conversation-time"><%= time %></div>
+                        </div>
+                        <div class="conversation-message"><%= lastMessage %></div>
+                        <div class="conversation-listing"><%= listingTitle %></div>
+                    </div>
+
+                    <% if (unread) { %><span class="unread-dot"></span><% } %>
+
+                    <% if (listingImg) { %>
+                        <img src="<%= listingImg %>" alt="" class="conversation-thumb">
+                    <% } %>
+
+                </a>
+
+            <% }) %>
+
+        </div>
+
+    <% } %>
+
+</div>

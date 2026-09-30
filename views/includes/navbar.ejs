@@ -1,26 +1,133 @@
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/"><i class="fa-regular fa-compass"></i></a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      
 
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-link" href="/listings">Explore</a>
-        </div>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="/listings/new">Airbnb Your Home</a>
-          <% if(curruser){ %>
-            <a class="nav-link" href="/Logout">Log out</a>
-          <% } %>
-          <% if(!curruser){ %>
-            <a class="nav-link" aria-current="page" href="/signup">Sign up</a>
-            <a class="nav-link" href="/Login">Log in</a>
+        <!-- Logo -->
+        <a class="navbar-brand" href="/">
+            <i class="fa-regular fa-compass"></i>
+        </a>
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+
+            <!-- Left -->
+            <div class="navbar-nav">
+                <a class="nav-link" href="/listings">
+                    Explore
+                </a>
+            </div>
+
+
+            <!-- Search -->
+            <form
+                class="d-flex mx-auto my-2 my-md-0"
+                action="/listings/search"
+                method="GET"
+                role="search"
+                style="width: min(450px, 100%);"
+            >
+
+                
+
+            </form>
+
+
+            <!-- Right -->
+            <!-- Right -->
+<div class="navbar-nav ms-auto align-items-center">
+
+    <a
+        class="nav-link"
+        href="/listings/new"
+    >
+        Airbnb Your Home
+    </a>
+
+    <% if (typeof curruser !== "undefined" && curruser) { %>
+
+        <!-- Profile -->
+        <a
+            href="/<%= curruser._id %>"
+            class="nav-link d-flex align-items-center gap-2"
+            title="View profile"
+        >
+            <% if(curruser.profilePhoto && curruser.profilePhoto.url){ %>
+
+                <img
+                    src="<%= curruser.profilePhoto.url %>"
+                    alt="Profile"
+                    style="
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 1px solid #ddd;
+                    "
+                >
+
+            <% } else { %>
+
+                <span
+                    style="
+                        width: 36px;
+                        height: 36px;
+                        border-radius: 50%;
+                        background: #222;
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        font-weight: 600;
+                    "
+                >
+                    <%= curruser.username.charAt(0).toUpperCase() %>
+                </span>
+
             <% } %>
+        </a>
+
+        <a
+            class="nav-link"
+            href="/logout"
+        >
+            Log out
+        </a>
+
+    <% } %>
+
+    <% if (typeof curruser === "undefined" || !curruser) { %>
+
+        <a
+            class="nav-link"
+            href="/signup"
+        >
+            Sign up
+        </a>
+
+        <a
+            class="nav-link"
+            href="/login"
+        >
+            Log in
+        </a>
+
+    <% } %>
+
+</div>
+
         </div>
-      </div>
+
     </div>
-  </nav>
-  
+</nav>

@@ -1,8 +1,5 @@
 const Listing = require("./models/listing");
 const Review = require("./models/review");
-
-
-
 module.exports.isLoggedIn = (req,res,next)=>{
     if(!req.isAuthenticated()) {
         ///redirect url save
@@ -13,14 +10,12 @@ module.exports.isLoggedIn = (req,res,next)=>{
       }
       next();
 }
-
 module.exports.saveRedirectUrl = (req , res , next ) => {
     if(req.session.redirectUrl){
         res.locals.redirecturl = req.session.redirectUrl;
     }
     next();
 }
-
 module.exports.isOwner = async (req , res , next ) => {
     let{id} = req.params;
     let listing = await Listing.findById(id);
@@ -30,8 +25,6 @@ module.exports.isOwner = async (req , res , next ) => {
     }
     next();
 }
-
-
 module.exports.isReviewAuthor = async (req , res , next ) => {
     let{id , reviewId} = req.params;
     let listing = await Review.findById(reviewId);

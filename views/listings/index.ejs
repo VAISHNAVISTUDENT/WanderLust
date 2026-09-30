@@ -1,95 +1,233 @@
 <% layout("/layouts/boilerplate.ejs") %>
+<%
+  const q = (typeof searchQuery !== 'undefined' && searchQuery) ? searchQuery : '';
+  const categories = [
+    { name: 'Grassland',     icon: 'fa-cow' },
+    { name: 'Luxury',        icon: 'fa-hotel' },
+    { name: 'Beach',         icon: 'fa-umbrella-beach' },
+    { name: 'Icons',         icon: 'fa-star' },
+    { name: 'Food Delights', icon: 'fa-bowl-food' },
+    { name: 'Tower',         icon: 'fa-tower-observation' },
+    { name: 'Cottage',       icon: 'fa-house' },
+    { name: 'Season',        icon: 'fa-cloud' },
+    { name: 'Snow',          icon: 'fa-snowflake' },
+    { name: 'Holy Sights',   icon: 'fa-place-of-worship' }
+  ];
+%>
 
-  <body>
-    <div class="option mt-3 mb-3">
+<style>
+  .ix { --brand: #ff385c; --brand-dark: #e00b41; --ink: #222; --muted: #6a6a6a; --line: #ddd; --soft: #f7f7f7; color: var(--ink); }
 
-      <div class="search">
-        <form class="d-flex airbnb-style">
-          <input class="form-control airbnb-input me-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn airbnb-btn" type="submit">Search</button>
-        </form>
-      </div>
+  /* ---------- Search pill ---------- */
+  .ix-search { max-width: 640px; margin: 1.5rem auto 1.25rem; }
+  .ix-search .input-group {
+    background: #fff; border: 1px solid var(--line); border-radius: 50rem; padding: 0.4rem 0.4rem 0.4rem 0.5rem;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1); transition: box-shadow 0.2s ease;
+  }
+  .ix-search .input-group:focus-within { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16); }
+  .ix-search .form-control { border: 0; box-shadow: none; background: transparent; padding-left: 1rem; font-size: 0.95rem; }
+  .ix-search .ix-search-btn {
+    border: 0; border-radius: 50rem !important; background: var(--brand); color: #fff;
+    padding: 0.6rem 1.4rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .ix-search .ix-search-btn:hover { background: var(--brand-dark); color: #fff; }
 
-      <div class="tax-switch ms-auto">
-        <div class="tax-btn-div ">
-          <button class="tax-btn ">With Tax</button>
-        </div>
-        
-      </div>
+  /* ---------- Filter bar ---------- */
+  .ix-bar { display: flex; align-items: center; gap: 1.25rem; border-bottom: 1px solid var(--line); padding-bottom: 0.25rem; margin-bottom: 1.75rem; }
+  .ix-cats { display: flex; gap: 2rem; overflow-x: auto; flex: 1; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .ix-cats::-webkit-scrollbar { display: none; }
+  .ix-cat {
+    background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.6rem 0 0.7rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex-shrink: 0;
+    color: var(--muted); opacity: 0.85; cursor: pointer; transition: color 0.15s, border-color 0.15s, opacity 0.15s;
+  }
+  .ix-cat i { font-size: 1.4rem; }
+  .ix-cat span { font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+  .ix-cat:hover, .ix-cat:focus-visible { color: var(--ink); opacity: 1; border-bottom-color: var(--line); outline: none; }
 
+  /* ---------- Real toggle switch ---------- */
+  .ix-tax {
+    display: inline-flex; align-items: center; gap: 0.75rem; flex-shrink: 0;
+    border: 1px solid var(--line); border-radius: 1rem; padding: 0.7rem 1rem; cursor: pointer; user-select: none; margin: 0;
+  }
+  .ix-tax:hover { border-color: var(--ink); }
+  .ix-tax-text { font-size: 0.85rem; font-weight: 600; line-height: 1.15; }
+  .ix-switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+  .ix-switch input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: pointer; z-index: 2; }
+  .ix-track { position: absolute; inset: 0; border-radius: 50rem; background: #b0b0b0; transition: background 0.2s ease; }
+  .ix-knob {
+    position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center; color: var(--ink); font-size: 0.6rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 0.2s ease;
+  }
+  .ix-knob i { opacity: 0; transition: opacity 0.15s; }
+  .ix-switch input:checked ~ .ix-track { background: var(--ink); }
+  .ix-switch input:checked ~ .ix-knob { transform: translateX(20px); }
+  .ix-switch input:checked ~ .ix-knob i { opacity: 1; }
+  .ix-switch input:focus-visible ~ .ix-track { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  /* ---------- Listing tiles ---------- */
+  .ix-tile { display: block; color: inherit; text-decoration: none; }
+  .ix-tile:hover { color: inherit; }
+  .ix-media { border-radius: 1.25rem; overflow: hidden; aspect-ratio: 20 / 19; background: #f0f0f0; }
+  .ix-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+  .ix-tile:hover .ix-media img { transform: scale(1.04); }
+  .ix-noimg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.9rem; }
+  .ix-title { font-weight: 600; font-size: 0.95rem; margin: 0.75rem 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ix-sub { color: var(--muted); font-size: 0.9rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ix-price { font-size: 0.95rem; margin: 0.25rem 0 0; }
+  .ix-price small { color: var(--muted); }
+
+  .ix-empty { background: var(--soft); border-radius: 1rem; padding: 3rem 1.5rem; text-align: center; color: var(--muted); }
+
+  @media (max-width: 767.98px) {
+    .ix-bar { flex-direction: column; align-items: stretch; gap: 0.75rem; border-bottom: 0; }
+    .ix-cats { gap: 1.5rem; border-bottom: 1px solid var(--line); }
+    .ix-tax { justify-content: space-between; }
+  }
+</style>
+
+<div class="ix">
+
+  <!-- Search -->
+  <form class="ix-search" action="/listings" method="get" role="search">
+    <div class="input-group">
+      <input
+        type="search"
+        name="q"
+        class="form-control"
+        placeholder="Search destinations..."
+        value="<%= q %>"
+        autocomplete="off"
+        aria-label="Search destinations"
+      >
+      <button class="btn ix-search-btn" type="submit">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span class="d-none d-sm-inline">Search</span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Categories + tax toggle -->
+  <div class="ix-bar">
+    <div class="ix-cats">
+      <% categories.forEach(function(c) { %>
+  <button
+    type="button"
+    class="ix-cat"
+    data-category="<%= c.name %>"
+  >
+    <i class="fa-solid <%= c.icon %>"></i>
+    <span><%= c.name %></span>
+  </button>
+<% }); %>
     </div>
 
-    <div class="category mt-2 mb-2 ">
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-cow "></i></div>
-        <div class="name">Grassland</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-hotel"></i></div>
-        <div class="name">Luxury</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-umbrella-beach"></i></div>
-        <div class="name">Beach</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-star"></i></div>
-        <div class="name">Icons</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-bowl-food"></i></div>
-        <div class="name">Food Delights</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-tower-observation"></i></div>
-        <div class="name">Tower</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-house"></i></div>
-        <div class="name">Cottage</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-cloud"></i></div>
-        <div class="name">Season</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-snowflake"></i></div>
-        <div class="name">Snow</div>
-      </div>
-      <div class="item_">
-        <div class="ico"><i class="fa-solid fa-place-of-worship"></i></i></div>
-        <div class="name">Holy Sights</div>
-      </div>
+    <label class="ix-tax" for="taxToggle">
+      <span class="ix-tax-text">Display total<br>after taxes</span>
+      <span class="ix-switch">
+        <input type="checkbox" id="taxToggle" role="switch" aria-label="Display total after taxes">
+        <span class="ix-track"></span>
+        <span class="ix-knob"><i class="fa-solid fa-check"></i></span>
+      </span>
+    </label>
+  </div>
+
+  <% if (q) { %>
+    <h2 class="h5 fw-semibold mb-3">Results for &ldquo;<%= q %>&rdquo;</h2>
+  <% } %>
+
+  <!-- Listings -->
+  <% if (!allListings || allListings.length === 0) { %>
+    <div class="ix-empty">
+      <h3 class="h5 fw-semibold text-dark">No listings found</h3>
+      <p class="mb-0"><%= q ? "Try a different destination or check your spelling." : "There are no listings yet." %></p>
     </div>
-    <hr>
-    
-      <div class="row row-cols-lg-4 row-cols-md-3 row-cols-sm-1">
-        <% for(let listing of allListings) { %>
-          <a class="listing-link" href="/listings/<%= listing._id %>">
-            <div class="card col">
-              <img src="<%= listing.image.url %>" class="card-img-top" style="height: 20rem;">
-              <div class="card-img-overlay"></div>
-              <div class="card-body">
-                <h5 class="card-title"></h5>
-                <p class="card-text">
-                <b><%= listing.title %></b>  <br>
-                <div class="tax-none">
-                  <%= listing.price.toLocaleString("en-IN") %> / night
-                </div>
-                <div class="tax hidden">
-                  <%= (listing.price.toLocaleString("en-IN"))%> + 18% tax / night
-                </div>
-                </p>
-              </div>
+  <% } else { %>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+      <% for (let listing of allListings) {
+           const price = Number(listing.price) || 0;
+           const hasImage = listing.images && listing.images.length > 0 && listing.images[0].url;
+      %>
+        <div class="col">
+          <a class="ix-tile" href="/listings/<%= listing._id %>">
+            <div class="ix-media">
+              <% if (hasImage) { %>
+                <img src="<%= listing.images[0].url %>" alt="<%= listing.title %>" loading="lazy">
+              <% } else { %>
+                <div class="ix-noimg">No image</div>
+              <% } %>
             </div>
+            <p class="ix-title"><%= listing.title %></p>
+            <% if (listing.location || listing.country) { %>
+              <p class="ix-sub"><%= [listing.location, listing.country].filter(Boolean).join(", ") %></p>
+            <% } %>
+            <p class="ix-price tax-none">
+              <b>&#8377;<%= price.toLocaleString("en-IN") %></b> <small>night</small>
+            </p>
+            <p class="ix-price tax d-none">
+              <b>&#8377;<%= Math.round(price * 1.18).toLocaleString("en-IN") %></b> <small>night &middot; incl. taxes</small>
+            </p>
           </a>
-        <% } %>
-      </div>
-      <script src="/js/toggle.js"></script>
-      
-  </body>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
+
+</div>
+
+<script>
+  (function () {
+
+    // =========================
+    // TAX TOGGLE
+    // =========================
+
+    var toggle = document.getElementById("taxToggle");
+
+    if (toggle) {
+
+      var basePrices = document.querySelectorAll(".tax-none");
+      var taxPrices = document.querySelectorAll(".tax");
+
+      function applyTax() {
+        basePrices.forEach(function (el) {
+          el.classList.toggle("d-none", toggle.checked);
+        });
+
+        taxPrices.forEach(function (el) {
+          el.classList.toggle("d-none", !toggle.checked);
+        });
+      }
+
+      toggle.addEventListener("change", applyTax);
+
+      applyTax();
+    }
 
 
+    // =========================
+    // CATEGORY SEARCH
+    // =========================
 
+    var categoryButtons = document.querySelectorAll(".ix-cat");
 
-  
+    categoryButtons.forEach(function (button) {
+
+      button.addEventListener("click", function () {
+
+        var category = button.dataset.category;
+
+        if (!category) return;
+
+        // Trigger search API
+        var searchUrl = "/listings/search?q=" +
+          encodeURIComponent(category);
+
+        window.location.href = searchUrl;
+      });
+
+    });
+
+  })();
+</script>

@@ -1,197 +1,317 @@
 <% layout("/layouts/boilerplate.ejs") %>
-<link rel="stylesheet" href="/css/home.css">
-<body>
-  <header id="header">
-    <div class="intro">
-      <div class="overlay">
-        <div class="container">
-          <div class="row">
-            <div class="intro-text">
-              <h1>WanderLust</h1>
-              <p>Reservations: XXXXXXXXXX</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-  <div id="features" class="text-center">
-    <div class="container">
-      <div class="section-title">
-        <h2>Our Specials</h2>
-      </div>
-      <div class="row">
-        <div class="col-xs-12 col-sm-4">
-          <div class="features-item">
-            <h3>Luxury Suite</h3>
-            <img src="" class="img-responsive" alt="">
-            <p>Experience the ultimate in luxury with our spacious suites, featuring stunning views and top-notch amenities.</p>
-          </div>
-        </div>
-        <div class="col-xs-12 col-sm-4">
-          <div class="features-item">
-            <h3>Family Package</h3>
-            <img src="img/specials/2.jpg" class="img-responsive" alt="">
-            <p>Enjoy a memorable family vacation with our special package designed for families, including discounts and activities for all ages.</p>
-          </div>
-        </div>
-        <div class="col-xs-12 col-sm-4">
-          <div class="features-item">
-            <h3>Romantic Getaway</h3>
-            <img src="img/specials/3.jpg" class="img-responsive" alt="">
-            <p>Escape with your loved one for a romantic retreat, complete with private dinners and couples' spa treatments.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div id="about">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-xs-12 col-md-6 about-img"> </div>
-        <div class="col-xs-12 col-md-3 col-md-offset-1">
-          <div class="about-text">
-            <div class="section-title">
-              <h2>Our Story</h2>
-            </div>
-            <p>WanderLust was founded with a passion for providing exceptional hospitality and unique travel experiences. Our dedicated team is committed to ensuring every guest has a memorable stay.</p>
-            <p>Our hotel blends modern amenities with timeless elegance, offering a perfect escape from the ordinary. Join us and be part of our story as we create unforgettable memories together.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div id="team">
-    <div class="container">
-      <div id="row">
-        <div class="col-md-6">
-          <div class="col-md-10 col-md-offset-1">
-            <div class="section-title">
-              <h2>Meet Our Team</h2>
-            </div>
-            <p>Our team of dedicated professionals is here to ensure your stay is nothing short of perfect. From our front desk staff to our housekeeping team, everyone is committed to providing outstanding service.</p>
-            <p>We pride ourselves on our attention to detail and our ability to anticipate your needs. Get to know the people who make WanderLust a truly special place.</p>
-          </div>
-        </div>
-        
-      </div>
-    </div>
-  </div>
+<%
+  const stays = [
+    { cat: "beach", icon: "fa-umbrella-beach", tone: "peach", name: "Tropical Paradise", price: 200, rating: "4.9", desc: "A stunning bungalow with direct beach access and breathtaking ocean views." },
+    { cat: "beach", icon: "fa-water", tone: "sky", name: "Seaside Villa", price: 250, rating: "4.8", desc: "Luxurious villa offering privacy, comfort, and magnificent sunset views." },
+    { cat: "mountain", icon: "fa-mountain-sun", tone: "mint", name: "Alpine Lodge", price: 150, rating: "4.9", desc: "Cozy lodge in the mountains with beautiful hiking trails and scenic views." },
+    { cat: "mountain", icon: "fa-tree", tone: "lavender", name: "Forest Chalet", price: 160, rating: "4.7", desc: "Elegant chalet with panoramic views and luxurious amenities." },
+    { cat: "city", icon: "fa-city", tone: "blush", name: "Luxury Penthouse", price: 300, rating: "4.9", desc: "Spacious penthouse with stunning city views and top-notch amenities." },
+    { cat: "city", icon: "fa-building", tone: "butter", name: "Downtown Loft", price: 250, rating: "4.8", desc: "Chic loft with industrial design, in a vibrant downtown area." },
+    { cat: "country", icon: "fa-house-chimney", tone: "mint", name: "Farmhouse Retreat", price: 140, rating: "4.8", desc: "Rustic charm and modern comforts in a peaceful farmhouse setting." },
+    { cat: "country", icon: "fa-wine-glass", tone: "lavender", name: "Vineyard Villa", price: 200, rating: "5.0", desc: "Luxurious villa in a vineyard, with wine tasting and scenic tours." }
+  ];
+%>
 
-  <div id="restaurant-menu">
-    <div class="container">
-      <div class="section-title text-center">
-        <h2>Our Dreamy Listings</h2>
-      </div>
-      <div class="row">
-        <div class="col-xs-12 col-sm-6">
-          <div class="menu-section">
-            <h2 class="menu-section-title">Beachside Escapes</h2>
-            <div class="menu-item">
-              <div class="menu-item-name">Tropical Paradise</div>
-              <div class="menu-item-price">From $200/night</div>
-              <div class="menu-item-description">A stunning bungalow with direct beach access and breathtaking ocean views.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Seaside Villa</div>
-              <div class="menu-item-price">From $250/night</div>
-              <div class="menu-item-description">Luxurious villa offering privacy, comfort, and magnificent sunset views.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Coastal Retreat</div>
-              <div class="menu-item-price">From $180/night</div>
-              <div class="menu-item-description">Enjoy the sound of waves and a serene environment in our coastal retreat.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Beachfront Cottage</div>
-              <div class="menu-item-price">From $220/night</div>
-              <div class="menu-item-description">Charming cottage steps away from the beach with all the modern amenities.</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xs-12 col-sm-6">
-          <div class="menu-section">
-            <h2 class="menu-section-title">Mountain Retreats</h2>
-            <div class="menu-item">
-              <div class="menu-item-name">Alpine Lodge</div>
-              <div class="menu-item-price">From $150/night</div>
-              <div class="menu-item-description">Cozy lodge in the mountains with beautiful hiking trails and scenic views.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Cabin Hideaway</div>
-              <div class="menu-item-price">From $170/night</div>
-              <div class="menu-item-description">Rustic cabin perfect for a quiet getaway, surrounded by nature.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Forest Chalet</div>
-              <div class="menu-item-price">From $160/night</div>
-              <div class="menu-item-description">Elegant chalet with panoramic views and luxurious amenities.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Mountain Resort</div>
-              <div class="menu-item-price">From $210/night</div>
-              <div class="menu-item-description">A full-service resort offering spa services, dining, and outdoor activities.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-xs-12 col-sm-6">
-          <div class="menu-section">
-            <h2 class="menu-section-title">Urban Luxuries</h2>
-            <div class="menu-item">
-              <div class="menu-item-name">City Center Apartment</div>
-              <div class="menu-item-price">From $180/night</div>
-              <div class="menu-item-description">Modern apartment in the heart of the city with easy access to attractions.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Luxury Penthouse</div>
-              <div class="menu-item-price">From $300/night</div>
-              <div class="menu-item-description">Spacious penthouse with stunning city views and top-notch amenities.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Boutique Hotel Room</div>
-              <div class="menu-item-price">From $200/night</div>
-              <div class="menu-item-description">Stylish and comfortable rooms in a boutique hotel with personalized service.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Downtown Loft</div>
-              <div class="menu-item-price">From $250/night</div>
-              <div class="menu-item-description">Chic loft with industrial design, located in a vibrant downtown area.</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-xs-12 col-sm-6">
-          <div class="menu-section">
-            <h2 class="menu-section-title">Countryside Havens</h2>
-            <div class="menu-item">
-              <div class="menu-item-name">Country Inn</div>
-              <div class="menu-item-price">From $120/night</div>
-              <div class="menu-item-description">Charming inn surrounded by beautiful countryside, perfect for a relaxing stay.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Farmhouse Retreat</div>
-              <div class="menu-item-price">From $140/night</div>
-              <div class="menu-item-description">Experience rustic charm and modern comforts in a peaceful farmhouse setting.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Riverside Cottage</div>
-              <div class="menu-item-price">From $160/night</div>
-              <div class="menu-item-description">Enjoy the tranquility of riverside living with beautiful views and cozy interiors.</div>
-            </div>
-            <div class="menu-item">
-              <div class="menu-item-name">Vineyard Villa</div>
-              <div class="menu-item-price">From $200/night</div>
-              <div class="menu-item-description">Luxurious villa located in a vineyard, offering wine tasting and scenic tours.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-</body>
+<style>
+  :root {
+    --peach: #ffe3d6;  --blush: #fbdde6;  --lavender: #e7e1f8;
+    --mint: #d9f2e6;   --sky: #dcebfa;    --butter: #fff3c9;
+    --cream: #fffaf6;  --ink: #4a4458;    --muted: #8a8398;
+    --accent: #f4a9b8; --accent-deep: #ee8fa3; --line: #efe7ee;
+  }
+
+  .wl { background: var(--cream); color: var(--ink); font-family: "Circular", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; }
+  .wl *, .wl *::before, .wl *::after { box-sizing: border-box; }
+  .wl section { padding: 4.5rem 1.25rem; }
+  .wl .wrap { max-width: 1120px; margin: 0 auto; }
+  .wl h1, .wl h2, .wl h3 { color: var(--ink); letter-spacing: -.02em; margin: 0; }
+  .wl h2 { font-size: 2rem; font-weight: 800; }
+  .wl .lead { color: var(--muted); font-size: 1.05rem; margin-top: .6rem; }
+  .wl .head { margin-bottom: 2rem; }
+
+  .tone-peach { background: linear-gradient(135deg, #ffe3d6, #ffd0dc); }
+  .tone-blush { background: linear-gradient(135deg, #fbdde6, #efdcf7); }
+  .tone-lavender { background: linear-gradient(135deg, #e7e1f8, #d6e6fa); }
+  .tone-mint { background: linear-gradient(135deg, #d9f2e6, #dcebfa); }
+  .tone-sky { background: linear-gradient(135deg, #dcebfa, #e7e1f8); }
+  .tone-butter { background: linear-gradient(135deg, #fff3c9, #ffe3d6); }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative; text-align: center; padding: 6rem 1.25rem 5.5rem !important;
+    background:
+      radial-gradient(600px 300px at 12% 10%, #fbdde6 0%, transparent 70%),
+      radial-gradient(600px 320px at 90% 15%, #dcebfa 0%, transparent 70%),
+      radial-gradient(700px 360px at 50% 100%, #e7e1f8 0%, transparent 70%),
+      var(--cream);
+  }
+  .pill-tag {
+    display: inline-block; padding: .35rem .9rem; border-radius: 999px;
+    background: #fff; border: 1px solid var(--line); font-size: .82rem; color: var(--muted); margin-bottom: 1.2rem;
+  }
+  .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; line-height: 1.08; }
+  .hero h1 span { color: var(--accent-deep); }
+  .hero .lead { max-width: 520px; margin: 1rem auto 2.2rem; }
+
+  .search {
+    display: flex; align-items: stretch; max-width: 820px; margin: 0 auto;
+    background: #fff; border: 1px solid var(--line); border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(120, 100, 140, .12); padding: .4rem;
+  }
+  .search .field { flex: 1; text-align: left; padding: .6rem 1.4rem; border-radius: 999px; min-width: 0; }
+  .search .field:hover { background: var(--cream); }
+  .search label { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .03em; color: var(--ink); }
+  .search input { border: 0; outline: 0; width: 100%; background: transparent; font-size: .9rem; color: var(--ink); padding: 0; }
+  .search input::placeholder { color: var(--muted); }
+  .search .divider { width: 1px; background: var(--line); margin: .7rem 0; }
+  .search button {
+    border: 0; border-radius: 999px; padding: 0 1.6rem; cursor: pointer; font-weight: 700;
+    background: linear-gradient(135deg, #f7b6c4, #f4a9b8); color: #5a3340; display: flex; align-items: center; gap: .5rem;
+    transition: transform .15s, filter .15s;
+  }
+  .search button:hover { filter: brightness(1.04); transform: translateY(-1px); }
+
+  /* ---------- CATEGORIES ---------- */
+  .cats { padding-top: 2.5rem !important; padding-bottom: 0 !important; }
+  .chips { display: flex; gap: .7rem; overflow-x: auto; padding-bottom: .5rem; justify-content: center; flex-wrap: wrap; }
+  .chip {
+    display: flex; align-items: center; gap: .55rem; padding: .7rem 1.2rem; border-radius: 999px;
+    background: #fff; border: 1px solid var(--line); color: var(--ink); font-weight: 600; font-size: .92rem;
+    cursor: pointer; transition: all .15s;
+  }
+  .chip i { color: var(--accent-deep); }
+  .chip:hover { box-shadow: 0 4px 14px rgba(120, 100, 140, .12); }
+  .chip.active { background: var(--blush); border-color: var(--accent); }
+
+  /* ---------- CARDS ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.6rem; }
+  .card-stay { transition: transform .2s; }
+  .card-stay:hover { transform: translateY(-4px); }
+  .card-stay.hide { display: none; }
+  .thumb {
+    position: relative; aspect-ratio: 1 / .92; border-radius: 22px; display: grid; place-items: center;
+    font-size: 3.2rem; color: rgba(74, 68, 88, .35); overflow: hidden;
+  }
+  .thumb::after { content: ""; position: absolute; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,.35); right: -40px; bottom: -40px; }
+  .heart {
+    position: absolute; top: 12px; right: 12px; z-index: 2; width: 34px; height: 34px; border-radius: 50%;
+    border: 0; background: rgba(255,255,255,.85); color: var(--ink); cursor: pointer; font-size: .95rem;
+    display: grid; place-items: center; transition: transform .15s;
+  }
+  .heart:hover { transform: scale(1.1); }
+  .heart.on { color: var(--accent-deep); }
+  .badge-fav { position: absolute; top: 12px; left: 12px; z-index: 2; background: #fff; padding: .25rem .7rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+  .card-body { padding: .8rem .2rem 0; }
+  .card-top { display: flex; justify-content: space-between; gap: .5rem; }
+  .card-top h3 { font-size: 1rem; font-weight: 700; }
+  .rating { font-size: .88rem; white-space: nowrap; }
+  .rating i { color: #f3c969; font-size: .75rem; }
+  .card-desc { color: var(--muted); font-size: .88rem; margin: .2rem 0 .3rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-price { font-size: .92rem; }
+  .card-price b { font-weight: 700; }
+
+  .cta-row { text-align: center; margin-top: 2.5rem; }
+  .btn-soft {
+    display: inline-block; padding: .85rem 1.8rem; border-radius: 14px; font-weight: 700; text-decoration: none;
+    background: linear-gradient(135deg, #f7b6c4, #f4a9b8); color: #5a3340; transition: filter .15s, transform .15s;
+  }
+  .btn-soft:hover { filter: brightness(1.04); transform: translateY(-1px); color: #5a3340; }
+  .btn-ghost { background: #fff; border: 1px solid var(--line); color: var(--ink); }
+  .btn-ghost:hover { color: var(--ink); }
+
+  /* ---------- SPECIALS ---------- */
+  .specials { background: #fff; }
+  .spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.4rem; }
+  .spec { border-radius: 26px; padding: 2rem 1.7rem; min-height: 250px; display: flex; flex-direction: column; }
+  .spec .ic { width: 52px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.7); display: grid; place-items: center; font-size: 1.3rem; color: var(--accent-deep); margin-bottom: 1.2rem; }
+  .spec h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: .5rem; }
+  .spec p { color: #6d6679; margin: 0; font-size: .95rem; line-height: 1.55; }
+
+  /* ---------- STORY ---------- */
+  .story { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; align-items: center; }
+  .story-art {
+    aspect-ratio: 1; border-radius: 34px; position: relative; overflow: hidden;
+    background: linear-gradient(145deg, #fbdde6, #e7e1f8 55%, #dcebfa);
+  }
+  .story-art .blob { position: absolute; border-radius: 50%; }
+  .story-art .b1 { width: 55%; height: 55%; background: #ffe3d6; left: -8%; top: -8%; }
+  .story-art .b2 { width: 48%; height: 48%; background: #d9f2e6; right: -6%; bottom: 10%; }
+  .story-art .b3 { width: 34%; height: 34%; background: #fff3c9; left: 30%; bottom: -8%; }
+  .story-art i { position: absolute; inset: 0; display: grid; place-items: center; font-size: 4.5rem; color: rgba(74,68,88,.4); }
+  .story p { color: var(--muted); line-height: 1.7; margin-top: 1rem; }
+  .stats { display: flex; gap: 2rem; margin-top: 1.8rem; flex-wrap: wrap; }
+  .stats b { display: block; font-size: 1.6rem; font-weight: 800; }
+  .stats span { color: var(--muted); font-size: .85rem; }
+
+  /* ---------- FINAL CTA ---------- */
+  .final { padding-top: 1rem !important; }
+  .final-box {
+    text-align: center; border-radius: 32px; padding: 4rem 1.5rem;
+    background: linear-gradient(135deg, #fbdde6, #e7e1f8 55%, #dcebfa);
+  }
+  .final-box .lead { max-width: 460px; margin: .7rem auto 1.8rem; }
+
+  footer.wl-foot { text-align: center; padding: 2rem 1rem 2.5rem; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+
+  @media (max-width: 820px) {
+    .wl section { padding: 3.2rem 1rem; }
+    .story { grid-template-columns: 1fr; gap: 2rem; }
+    .search { flex-direction: column; border-radius: 26px; padding: .6rem; }
+    .search .divider { width: auto; height: 1px; margin: 0 1rem; }
+    .search button { padding: .9rem; justify-content: center; margin-top: .4rem; }
+  }
+</style>
 
 
-  
+<div class="wl">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="pill-tag"><i class="fa-solid fa-sparkles"></i> Reservations: XXXXXXXXXX</span>
+      <h1>Find your next <span>wander</span></h1>
+      <p class="lead">Dreamy stays by the sea, in the mountains, the city and the countryside — all in one gentle place.</p>
+
+      <form class="search" action="/listings" method="GET">
+        <div class="field"><label for="q">Where</label><input id="q" name="q" placeholder="Search destinations"></div>
+        <div class="divider"></div>
+        <div class="field"><label for="in">Check in</label><input id="in" type="date" name="checkin"></div>
+        <div class="divider"></div>
+        <div class="field"><label for="out">Check out</label><input id="out" type="date" name="checkout"></div>
+        <div class="divider"></div>
+        <div class="field"><label for="g">Guests</label><input id="g" type="number" min="1" name="guests" placeholder="Add guests"></div>
+        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="cats">
+    <div class="wrap">
+      <div class="chips" id="chips">
+        <button class="chip active" data-cat="all"><i class="fa-solid fa-heart"></i> All stays</button>
+        <button class="chip" data-cat="beach"><i class="fa-solid fa-umbrella-beach"></i> Beachside</button>
+        <button class="chip" data-cat="mountain"><i class="fa-solid fa-mountain"></i> Mountain</button>
+        <button class="chip" data-cat="city"><i class="fa-solid fa-city"></i> Urban</button>
+        <button class="chip" data-cat="country"><i class="fa-solid fa-house-chimney"></i> Countryside</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LISTINGS -->
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <h2>Our dreamy listings</h2>
+        <p class="lead">Hand-picked places that feel like a deep breath.</p>
+      </div>
+
+      <div class="grid">
+        <% stays.forEach((s, i) => { %>
+          <article class="card-stay" data-cat="<%= s.cat %>">
+            <div class="thumb tone-<%= s.tone %>">
+              <% if (s.rating >= 4.9) { %><span class="badge-fav">Guest favourite</span><% } %>
+              <button class="heart" type="button" aria-label="Save"><i class="fa-regular fa-heart"></i></button>
+              <i class="fa-solid <%= s.icon %>"></i>
+            </div>
+            <div class="card-body">
+              <div class="card-top">
+                <h3><%= s.name %></h3>
+                <span class="rating"><i class="fa-solid fa-star"></i> <%= s.rating %></span>
+              </div>
+              <p class="card-desc"><%= s.desc %></p>
+              <div class="card-price"><b>$<%= s.price %></b> / night</div>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+
+      <div class="cta-row"><a href="/listings" class="btn-soft">Show all listings</a></div>
+    </div>
+  </section>
+
+  <!-- SPECIALS -->
+  <section class="specials">
+    <div class="wrap">
+      <div class="head">
+        <h2>Our specials</h2>
+        <p class="lead">Little extras for every kind of trip.</p>
+      </div>
+      <div class="spec-grid">
+        <div class="spec tone-peach">
+          <div class="ic"><i class="fa-solid fa-gem"></i></div>
+          <h3>Luxury Suite</h3>
+          <p>Experience the ultimate in luxury with spacious suites, stunning views and top-notch amenities.</p>
+        </div>
+        <div class="spec tone-mint">
+          <div class="ic"><i class="fa-solid fa-children"></i></div>
+          <h3>Family Package</h3>
+          <p>A memorable family vacation with discounts and activities for all ages.</p>
+        </div>
+        <div class="spec tone-lavender">
+          <div class="ic"><i class="fa-solid fa-heart"></i></div>
+          <h3>Romantic Getaway</h3>
+          <p>Escape with your loved one — private dinners and couples' spa treatments included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section>
+    <div class="wrap story">
+      <div class="story-art">
+        <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+        <i class="fa-solid fa-suitcase-rolling"></i>
+      </div>
+      <div>
+        <h2>Our story</h2>
+        <p>WanderLust was founded with a passion for exceptional hospitality and unique travel experiences. Our dedicated team is committed to ensuring every guest has a memorable stay.</p>
+        <p>We blend modern amenities with timeless elegance, offering a perfect escape from the ordinary. From our front desk to our housekeeping team, we anticipate your needs so you can simply arrive and relax.</p>
+        <div class="stats">
+          <div><b>4</b><span>Kinds of escapes</span></div>
+          <div><b>24/7</b><span>Friendly support</span></div>
+          <div><b>4.8★</b><span>Average stay</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final">
+    <div class="wrap">
+      <div class="final-box">
+        <h2>Ready when you are</h2>
+        <p class="lead">Browse stays, message hosts, and plan something lovely.</p>
+        <a href="/listings" class="btn-soft">Start exploring</a>
+        <a href="/chat" class="btn-soft btn-ghost" style="margin-left:.5rem">My messages</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wl-foot">© WanderLust · Stay somewhere lovely</footer>
+</div>
+
+
+<script>
+  // Category filter
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      const cat = chip.dataset.cat;
+      document.querySelectorAll(".card-stay").forEach(card => {
+        card.classList.toggle("hide", cat !== "all" && card.dataset.cat !== cat);
+      });
+    });
+  });
+
+  // Heart toggle
+  document.querySelectorAll(".heart").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const on = btn.classList.toggle("on");
+      btn.innerHTML = on ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>';
+    });
+  });
+</script>

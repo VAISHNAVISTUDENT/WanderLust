@@ -1,0 +1,1029 @@
+<% layout("/layouts/boilerplate") %>
+
+<%
+    const otherUser = conversation.participants.find(
+        user => String(user._id) !== String(curruser._id)
+    );
+
+    const otherName = otherUser ? otherUser.username : "User";
+
+    const otherInitial = otherName
+        ? otherName.charAt(0).toUpperCase()
+        : "?";
+
+    const listing = conversation.listing;
+
+    const fmtTime = d =>
+        d
+            ? new Date(d).toLocaleTimeString("en-IN", {
+                  hour: "numeric",
+                  minute: "2-digit"
+              })
+            : "";
+
+    const fmtDay = d =>
+        new Date(d).toLocaleDateString("en-IN", {
+            weekday: "long",
+            day: "numeric",
+            month: "short"
+        });
+
+    let lastDay = "";
+%>
+
+<style>
+    :root {
+        --rose: #ff385c;
+        --rose-dark: #e31c5f;
+        --ink: #222;
+        --muted: #6a6a6a;
+        --line: #dddddd;
+        --soft: #f2f2f2;
+    }
+
+    .chat-container {
+        max-width: 850px;
+        height: calc(100vh - 100px);
+        min-height: 550px;
+        margin: 0 auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-shell {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    /* ---------- HEADER ---------- */
+
+    .chat-header {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.85rem 1.1rem;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+        flex: none;
+    }
+
+    .back-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink);
+        text-decoration: none;
+        flex: none;
+        transition: background 0.15s;
+    }
+
+    .back-btn:hover {
+        background: var(--soft);
+        color: var(--ink);
+    }
+
+    .chat-avatar,
+    .chat-avatar-fallback {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        flex: none;
+    }
+
+    .chat-avatar {
+        object-fit: cover;
+    }
+
+    .chat-avatar-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ink);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .chat-header-info {
+        min-width: 0;
+    }
+
+    .chat-header-name {
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .chat-header-listing {
+        color: var(--muted);
+        font-size: 0.82rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 500px;
+    }
+
+    /* ---------- LISTING CARD ---------- */
+
+    .listing-strip {
+        flex: none;
+        padding: 0.75rem 1.1rem 0;
+        background: #fff;
+    }
+
+    .listing-card {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.6rem;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        text-decoration: none;
+        color: inherit;
+        transition: box-shadow 0.15s;
+    }
+
+    .listing-card:hover {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        color: inherit;
+    }
+
+    .listing-card img {
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        object-fit: cover;
+        background: var(--soft);
+    }
+
+    .listing-card .lc-title {
+        font-weight: 600;
+        font-size: 0.92rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .listing-card .lc-sub {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    .listing-card .lc-body {
+        min-width: 0;
+    }
+
+    /* ---------- MESSAGES ---------- */
+
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.25rem 1.5rem;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .day-sep {
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin: 0.9rem 0 0.5rem;
+    }
+
+    .message-row {
+        display: flex;
+        width: 100%;
+    }
+
+    .message-row.mine {
+        justify-content: flex-end;
+    }
+
+    .message-row.theirs {
+        justify-content: flex-start;
+    }
+
+    .message-bubble {
+        max-width: min(70%, 500px);
+        padding: 0.65rem 1rem;
+        border-radius: 20px;
+        line-height: 1.4;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+
+    .message-row.mine .message-bubble {
+        background: var(--ink);
+        color: #fff;
+        border-bottom-right-radius: 6px;
+    }
+
+    .message-row.theirs .message-bubble {
+        background: var(--soft);
+        color: var(--ink);
+        border-bottom-left-radius: 6px;
+    }
+
+    .message-time {
+        display: block;
+        font-size: 0.68rem;
+        margin-top: 0.25rem;
+        opacity: 0.6;
+    }
+
+    .message-row.mine .message-time {
+        text-align: right;
+    }
+
+    .empty-messages {
+        margin: auto;
+        text-align: center;
+        color: var(--muted);
+    }
+
+    .empty-messages i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        color: var(--rose);
+    }
+
+    /* ---------- INPUT ---------- */
+
+    .chat-input-area {
+        flex: none;
+        padding: 0.8rem 1rem;
+        border-top: 1px solid var(--line);
+        background: #fff;
+    }
+
+    .chat-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.6rem;
+    }
+
+    .chat-input {
+        flex: 1;
+        resize: none;
+        min-height: 46px;
+        max-height: 120px;
+        border-radius: 24px;
+        border: 1px solid #b0b0b0;
+        padding: 0.7rem 1.1rem;
+        outline: none;
+        font-size: 0.95rem;
+    }
+
+    .chat-input:focus {
+        border-color: var(--ink);
+        box-shadow: 0 0 0 1px var(--ink);
+    }
+
+    .send-btn {
+        width: 46px;
+        height: 46px;
+        border: 0;
+        border-radius: 50%;
+        background: linear-gradient(
+            to right,
+            var(--rose),
+            var(--rose-dark)
+        );
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        cursor: pointer;
+        transition: transform 0.1s, filter 0.15s;
+    }
+
+    .send-btn:hover {
+        filter: brightness(0.95);
+    }
+
+    .send-btn:active {
+        transform: scale(0.94);
+    }
+
+    .send-btn:disabled {
+        background: #ddd;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ---------- MOBILE ---------- */
+
+    @media (max-width: 576px) {
+        .chat-container {
+            height: calc(100vh - 75px);
+            min-height: 450px;
+            padding: 0;
+        }
+
+        .chat-shell {
+            border-radius: 0;
+            border-left: 0;
+            border-right: 0;
+            box-shadow: none;
+        }
+
+        .messages-container {
+            padding: 1rem 0.8rem;
+        }
+
+        .message-bubble {
+            max-width: 82%;
+        }
+
+        .chat-header-listing {
+            max-width: 220px;
+        }
+    }
+</style>
+
+
+<div class="chat-container">
+
+    <div class="chat-shell">
+
+        <!-- HEADER -->
+
+        <div class="chat-header">
+
+            <a
+                href="/chat"
+                class="back-btn"
+                title="Back to messages"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+
+            <% if (
+                otherUser &&
+                otherUser.profilePhoto &&
+                otherUser.profilePhoto.url
+            ) { %>
+
+                <img
+                    src="<%= otherUser.profilePhoto.url %>"
+                    alt="<%= otherName %>"
+                    class="chat-avatar"
+                >
+
+            <% } else { %>
+
+                <div class="chat-avatar-fallback">
+                    <%= otherInitial %>
+                </div>
+
+            <% } %>
+
+            <div class="chat-header-info">
+
+                <div class="chat-header-name">
+                    <%= otherName %>
+                </div>
+
+                <div class="chat-header-listing">
+                    <%= listing ? listing.title : "Conversation" %>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- LISTING CARD -->
+
+        <% if (listing) { %>
+
+            <div class="listing-strip">
+
+                <a
+                    class="listing-card"
+                    href="/listings/<%= listing._id %>"
+                >
+
+                    <%
+                        const listingImage =
+                            listing.images &&
+                            listing.images.length > 0
+                                ? listing.images[0].url
+                                : "";
+                    %>
+
+                    <% if (listingImage) { %>
+
+                        <img
+                            src="<%= listingImage %>"
+                            alt="<%= listing.title %>"
+                        >
+
+                    <% } else { %>
+
+                        <div
+                            style="
+                                width: 56px;
+                                height: 56px;
+                                border-radius: 10px;
+                                background: #f2f2f2;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            <i class="fa-regular fa-image"></i>
+                        </div>
+
+                    <% } %>
+
+                    <div class="lc-body">
+
+                        <div class="lc-title">
+                            <%= listing.title %>
+                        </div>
+
+                        <div class="lc-sub">
+
+                            <%= listing.location || "" %>
+
+                            <% if (listing.price) { %>
+
+                                · ₹<%= Number(
+                                    listing.price
+                                ).toLocaleString("en-IN") %> / night
+
+                            <% } %>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        <% } %>
+
+
+        <!-- MESSAGES -->
+
+        <div
+            class="messages-container"
+            id="messagesContainer"
+        >
+
+            <% if (messages.length === 0) { %>
+
+                <div
+                    class="empty-messages"
+                    id="emptyMessages"
+                >
+
+                    <i class="fa-regular fa-comments"></i>
+
+                    <div class="fw-semibold">
+                        Start the conversation
+                    </div>
+
+                    <small>
+                        Send a message to <%= otherName %>.
+                    </small>
+
+                </div>
+
+            <% } %>
+
+
+            <% messages.forEach(message => {
+
+                const mine =
+                    String(message.sender._id || message.sender) ===
+                    String(curruser._id);
+
+                const day =
+                    message.createdAt
+                        ? fmtDay(message.createdAt)
+                        : "";
+
+                if (day && day !== lastDay) {
+
+                    lastDay = day;
+            %>
+
+                    <div class="day-sep">
+                        <%= day %>
+                    </div>
+
+            <% } %>
+
+
+                <div
+                    class="message-row <%= mine ? "mine" : "theirs" %>"
+                    data-message-id="<%= message._id %>"
+                >
+
+                    <div class="message-bubble">
+
+                        <%= message.content %>
+
+                        <span class="message-time">
+                            <%= fmtTime(message.createdAt) %>
+                        </span>
+
+                    </div>
+
+                </div>
+
+            <% }) %>
+
+        </div>
+
+
+        <!-- INPUT -->
+
+        <div class="chat-input-area">
+
+            <form
+                id="chatForm"
+                class="chat-form"
+            >
+
+                <textarea
+                    id="messageInput"
+                    class="chat-input"
+                    rows="1"
+                    maxlength="2000"
+                    placeholder="Type a message..."
+                    autocomplete="off"
+                ></textarea>
+
+                <button
+                    type="submit"
+                    class="send-btn"
+                    id="sendButton"
+                    title="Send message"
+                    disabled
+                >
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+    // ==========================================
+    // SOCKET.IO
+    // ==========================================
+
+    const socket = io();
+
+
+    const conversationId =
+        "<%= conversation._id %>";
+
+    const currentUserId =
+        "<%= curruser._id %>";
+
+
+    // Join this conversation's room
+
+    socket.emit(
+        "joinConversation",
+        conversationId
+    );
+
+
+    // ==========================================
+    // DOM ELEMENTS
+    // ==========================================
+
+    const messagesContainer =
+        document.getElementById(
+            "messagesContainer"
+        );
+
+    const chatForm =
+        document.getElementById(
+            "chatForm"
+        );
+
+    const messageInput =
+        document.getElementById(
+            "messageInput"
+        );
+
+    const sendButton =
+        document.getElementById(
+            "sendButton"
+        );
+
+
+    // ==========================================
+    // SCROLL
+    // ==========================================
+
+    function scrollToBottom() {
+
+        messagesContainer.scrollTop =
+            messagesContainer.scrollHeight;
+
+    }
+
+
+    scrollToBottom();
+
+
+    // ==========================================
+    // MARK AS READ
+    // ==========================================
+
+    fetch(
+        `/chat/${conversationId}/read`,
+        {
+            method: "PUT"
+        }
+    ).catch(() => {});
+
+
+    // ==========================================
+    // SEND BUTTON
+    // ==========================================
+
+    function syncSendState() {
+
+        sendButton.disabled =
+            !messageInput.value.trim();
+
+    }
+
+
+    // ==========================================
+    // TEXTAREA RESIZE
+    // ==========================================
+
+    function autoResize() {
+
+        messageInput.style.height =
+            "auto";
+
+        messageInput.style.height =
+            Math.min(
+                messageInput.scrollHeight,
+                120
+            ) + "px";
+
+    }
+
+
+    messageInput.addEventListener(
+        "input",
+        () => {
+
+            autoResize();
+
+            syncSendState();
+
+        }
+    );
+
+
+    // ==========================================
+    // ENTER TO SEND
+    // ==========================================
+
+    messageInput.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                chatForm.requestSubmit();
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // SEND MESSAGE
+    // ==========================================
+
+    chatForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            const content =
+                messageInput.value.trim();
+
+
+            if (!content) {
+                return;
+            }
+
+
+            sendButton.disabled = true;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/chat/${conversationId}/message`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    content
+                                })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    alert(
+                        data.message ||
+                        "Unable to send message."
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * Do NOT call addMessage()
+                 * here.
+                 *
+                 * The server will broadcast
+                 * the message through Socket.IO.
+                 *
+                 * This prevents duplicate messages.
+                 */
+
+
+                messageInput.value = "";
+
+                autoResize();
+
+                scrollToBottom();
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Something went wrong while sending the message."
+                );
+
+            } finally {
+
+                messageInput.focus();
+
+                syncSendState();
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // RECEIVE REAL-TIME MESSAGE
+    // ==========================================
+
+    socket.on(
+        "newMessage",
+        function (message) {
+
+            console.log(
+                "New message received:",
+                message
+            );
+
+
+            /*
+             * The sender also receives the
+             * Socket.IO event.
+             *
+             * So the same function works
+             * for both sender and receiver.
+             */
+
+            const emptyMessages =
+                document.getElementById(
+                    "emptyMessages"
+                );
+
+
+            if (emptyMessages) {
+                emptyMessages.remove();
+            }
+
+
+            const alreadyExists =
+                document.querySelector(
+                    `[data-message-id="${message._id}"]`
+                );
+
+
+            // Prevent duplicate message
+
+            if (alreadyExists) {
+                return;
+            }
+
+
+            const mine =
+                String(
+                    message.sender._id
+                ) ===
+                String(
+                    currentUserId
+                );
+
+
+            addMessage(
+                message,
+                mine
+            );
+
+
+            scrollToBottom();
+
+
+            // If message is from another user,
+            // mark it as read because this
+            // conversation is currently open.
+
+            if (!mine) {
+
+                fetch(
+                    `/chat/${conversationId}/read`,
+                    {
+                        method: "PUT"
+                    }
+                ).catch(() => {});
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // ADD MESSAGE TO UI
+    // ==========================================
+
+    function addMessage(
+        message,
+        mine
+    ) {
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            `message-row ${
+                mine
+                    ? "mine"
+                    : "theirs"
+            }`;
+
+
+        row.dataset.messageId =
+            message._id;
+
+
+        const bubble =
+            document.createElement(
+                "div"
+            );
+
+
+        bubble.className =
+            "message-bubble";
+
+
+        // Message content
+
+        bubble.appendChild(
+            document.createTextNode(
+                message.content
+            )
+        );
+
+
+        // Time
+
+        const time =
+            document.createElement(
+                "span"
+            );
+
+
+        time.className =
+            "message-time";
+
+
+        const date =
+            message.createdAt
+                ? new Date(
+                    message.createdAt
+                )
+                : new Date();
+
+
+        time.textContent =
+            date.toLocaleTimeString(
+                "en-IN",
+                {
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+
+
+        bubble.appendChild(time);
+
+
+        row.appendChild(bubble);
+
+
+        messagesContainer.appendChild(
+            row
+        );
+
+    }
+
+
+    // ==========================================
+    // SOCKET DISCONNECT
+    // ==========================================
+
+    window.addEventListener(
+        "beforeunload",
+        () => {
+
+            socket.emit(
+                "leaveConversation",
+                conversationId
+            );
+
+            socket.disconnect();
+
+        }
+    );
+
+</script>
+
+

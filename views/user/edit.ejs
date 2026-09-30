@@ -1,0 +1,202 @@
+<% layout("/layouts/boilerplate") -%>
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7 col-md-9">
+
+            <!-- Header -->
+            <div class="mb-4">
+                <a
+                    href="/<%= user._id %>"
+                    class="text-decoration-none text-dark"
+                >
+                    ← Back to profile
+                </a>
+
+                <h1 class="fw-semibold mt-4 mb-2">
+                    Edit profile
+                </h1>
+
+                <p class="text-muted">
+                    Update your profile information and profile photo.
+                </p>
+            </div>
+
+
+            <!-- Profile Card -->
+            <div class="card border-0 shadow-sm rounded-4">
+
+                <div class="card-body p-4 p-md-5">
+
+                    <form
+                        method="POST"
+                        action="/<%= user._id %>?_method=PUT"
+                        enctype="multipart/form-data"
+                    >
+
+                        <!-- Profile Photo -->
+                        <div class="text-center mb-5">
+
+                            <% if (user.profilePhoto && user.profilePhoto.url) { %>
+
+                                <img
+                                    src="<%= user.profilePhoto.url %>"
+                                    alt="Profile photo"
+                                    class="rounded-circle shadow-sm"
+                                    style="
+                                        width: 130px;
+                                        height: 130px;
+                                        object-fit: cover;
+                                    "
+                                >
+
+                            <% } else { %>
+
+                                <div
+                                    class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto shadow-sm"
+                                    style="
+                                        width: 130px;
+                                        height: 130px;
+                                        font-size: 3rem;
+                                        font-weight: 600;
+                                    "
+                                >
+                                    <%= user.username.charAt(0).toUpperCase() %>
+                                </div>
+
+                            <% } %>
+
+                            <div class="mt-3">
+
+                                <label
+                                    for="profilePhoto"
+                                    class="btn btn-outline-dark rounded-pill px-4"
+                                >
+                                    Change photo
+                                </label>
+
+                                <input
+                                    type="file"
+                                    name="profilePhoto"
+                                    id="profilePhoto"
+                                    class="d-none"
+                                    accept="image/*"
+                                >
+
+                            </div>
+
+                            <small class="text-muted d-block mt-2">
+                                JPG, PNG or WebP
+                            </small>
+
+                        </div>
+
+
+                        <!-- Username -->
+                        <div class="mb-4">
+
+                            <label
+                                for="username"
+                                class="form-label fw-semibold"
+                            >
+                                Username
+                            </label>
+
+                            <input
+                                type="text"
+                                id="username"
+                                class="form-control form-control-lg rounded-3"
+                                value="<%= user.username %>"
+                                disabled
+                            >
+
+                            <div class="form-text">
+                                Username cannot be changed here.
+                            </div>
+
+                        </div>
+
+
+                        <!-- Email -->
+                        <div class="mb-4">
+
+                            <label
+                                for="email"
+                                class="form-label fw-semibold"
+                            >
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                class="form-control form-control-lg rounded-3"
+                                value="<%= user.email %>"
+                                disabled
+                            >
+
+                            <div class="form-text">
+                                Your email is associated with your WanderLust account.
+                            </div>
+
+                        </div>
+
+
+                        <!-- Description -->
+                        <div class="mb-4">
+
+                            <label
+                                for="description"
+                                class="form-label fw-semibold"
+                            >
+                                About you
+                            </label>
+
+                            <textarea
+                                name="description"
+                                id="description"
+                                class="form-control rounded-3"
+                                rows="5"
+                                maxlength="500"
+                                placeholder="Tell people a little about yourself..."
+                            ><%= user.description || "" %></textarea>
+
+                            <div class="form-text">
+                                Tell other WanderLust users a little about yourself.
+                            </div>
+
+                        </div>
+
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-3 pt-3">
+
+                            <a
+                                href="/<%= user._id %>"
+                                class="btn btn-light border rounded-pill px-4"
+                            >
+                                Cancel
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-dark rounded-pill px-4"
+                            >
+                                Save changes
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

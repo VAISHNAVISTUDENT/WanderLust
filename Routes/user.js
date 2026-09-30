@@ -1,20 +1,84 @@
 const express = require("express");
+
 const router = express.Router();
-const User = require("../models/user.js")
+
 const wrapAsync = require("../utils/wrapAsync.js");
+
 const passport = require("passport");
+
 const { saveRedirectUrl } = require("../middleware.js");
-const listingController = require("../controllers/users.js");
+
+const userController = require("../controllers/users.js");
+
+const multer = require("multer");
+
+const { storage } = require("../cloudConfig.js");
+
+const upload = multer({ storage });
 
 
-router.get("/signup",listingController.signup);
+// ================= SIGNUP =================
 
-router.post("/signup" , wrapAsync(listingController.psignup));
+router.get(
+    "/signup",
+    userController.signup
+);
 
-router.get("/login",listingController.login);
+router.post(
+    "/signup",
+    wrapAsync(userController.psignup)
+);
 
-router.post("/login" ,saveRedirectUrl,passport.authenticate('local',{failureRedirect: "/login" , failureFlash:true}), wrapAsync(listingController.plogin));
 
-router.get("/logout" , listingController.logout);
+// ================= LOGIN =================
+
+router.get(
+    "/login",
+    userController.login
+);
+
+router.post(
+    "/login",
+    saveRedirectUrl,
+    passport.authenticate("local", {
+        failureRedirect: "/login",
+        failureFlash: true
+    }),
+    wrapAsync(userController.plogin)
+);
+
+
+// ================= LOGOUT =================
+
+router.get(
+    "/logout",
+    userController.logout
+);
+
+
+// ================= EDIT PROFILE =================
+
+router.get(
+    "/:id/edit",
+    wrapAsync(userController.editProfile)
+);
+
+
+// ================= UPDATE PROFILE =================
+
+router.put(
+    "/:id",
+    upload.single("profilePhoto"),
+    wrapAsync(userController.updateProfile)
+);
+
+
+// ================= PROFILE =================
+
+router.get(
+    "/:id",
+    wrapAsync(userController.profile)
+);
+
 
 module.exports = router;

@@ -1,285 +1,428 @@
-<% layout("/layouts/boilerplate.ejs") %>
-<link rel="stylesheet" href="/css/home.css">
+<% layout("/layouts/boilerplate") %>
 
-    <div class="container mt-5">
+<%
+  /* ---------- helpers ---------- */
+  const STAR = `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M15.1 1.58l-4.13 8.88-9.86 1.27a1 1 0 0 0-.54 1.74l7.3 6.57-1.97 9.85a1 1 0 0 0 1.48 1.06l8.62-5 8.63 5a1 1 0 0 0 1.48-1.06l-1.97-9.85 7.3-6.57a1 1 0 0 0-.55-1.73l-9.86-1.28-4.12-8.88a1 1 0 0 0-1.82 0z"/></svg>`;
+  const optimize = (url, w) => (url && url.includes("/upload/")) ? url.replace("/upload/", `/upload/w_${w},q_auto,f_auto/`) : url;
 
-      <div class="gallery">
-        <div class="left"><img  src="<%= listing.image.url %>" alt="" class=" iamg"  ></div>
-        <div class="right">
-          <div class="top"><img  src="https://i.pinimg.com/564x/d3/47/b7/d347b79d7ee882e8b89d29028315b98a.jpg" alt="" class=" iamg"  ></div>
-          <div class="bottom"><img  src="https://i.pinimg.com/564x/ff/36/b6/ff36b62a42178ca8fe1b89be78c5df77.jpg" alt="" class=" iamg"  ></div>
-        </div>
+  const images  = (listing.images || []).filter(i => i && i.url);
+  const shown   = images.slice(0, 5);
+  const reviews = listing.reviews || [];
+  const total   = reviews.length;
+  const avg     = total ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / total : 0;
+  const counts  = [5,4,3,2,1].map(n => reviews.filter(r => r.rating === n).length);
+  const isOwner = curruser && listing.owner && listing.owner._id.equals(curruser._id);
+%>
+
+<style>
+  :root { --brand:#ff385c; --ink:#222; --muted:#6a6a6a; --line:#ebebeb; }
+
+  .listing-page { max-width: 1120px; margin: 0 auto; padding: 0 1rem 4rem; }
+  .listing-title { font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 600; margin: 1.5rem 0 .75rem; color: var(--ink); }
+
+  /* ---------- star icons ---------- */
+  .stars { display:inline-flex; gap:2px; vertical-align:middle; }
+  .stars svg { width:14px; height:14px; fill: var(--ink); }
+  .stars svg.off { fill:#dcdcdc; }
+  .stars.lg svg { width:20px; height:20px; }
+
+  /* ---------- gallery ---------- */
+  .gallery { position:relative; }
+  .gallery-grid {
+    display:grid; gap:8px; border-radius:16px; overflow:hidden;
+    grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr;
+    height: clamp(260px, 42vw, 480px);
+  }
+  .gallery-grid .tile { position:relative; padding:0; border:0; background:#eee; cursor:pointer; overflow:hidden; }
+  .gallery-grid .tile img { width:100%; height:100%; object-fit:cover; display:block; transition: transform .4s ease, filter .2s; }
+  .gallery-grid .tile:hover img { filter:brightness(.88); }
+  .gallery-grid .tile:first-child { grid-row: span 2; }
+  .gallery-grid .tile:focus-visible { outline:3px solid var(--ink); outline-offset:-3px; }
+  .gallery-grid[data-count="1"] { grid-template-columns:1fr; grid-template-rows:1fr; }
+  .gallery-grid[data-count="2"] { grid-template-columns:1fr 1fr; grid-template-rows:1fr; }
+  .gallery-grid[data-count="2"] .tile:first-child { grid-row:auto; }
+  .gallery-grid[data-count="3"] { grid-template-columns:2fr 1fr; }
+  .gallery-grid[data-count="4"] .tile:last-child { grid-column: span 2; }
+  .gallery-empty { height:260px; border-radius:16px; background:#f3f3f3; display:grid; place-items:center; color:var(--muted); }
+
+  .show-all-btn {
+    position:absolute; right:16px; bottom:16px; background:#fff; color:var(--ink);
+    border:1px solid var(--ink); border-radius:8px; padding:.45rem .9rem; font-weight:600; font-size:.875rem;
+    display:flex; align-items:center; gap:.5rem; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.15);
+  }
+  .show-all-btn:hover { background:#f7f7f7; }
+
+  /* mobile: swipeable strip like the Airbnb app */
+  @media (max-width: 767px) {
+    .gallery-grid, .gallery-grid[data-count] {
+      display:flex; overflow-x:auto; scroll-snap-type:x mandatory; border-radius:0;
+      margin:0 -1rem; height:260px; gap:0; -webkit-overflow-scrolling:touch;
+    }
+    .gallery-grid .tile, .gallery-grid .tile:first-child, .gallery-grid[data-count="4"] .tile:last-child {
+      flex:0 0 100%; scroll-snap-align:center; grid-column:auto; grid-row:auto;
+    }
+    .show-all-btn { right:12px; bottom:12px; padding:.3rem .7rem; }
+  }
+
+  /* ---------- modal with all photos ---------- */
+  .photo-modal .modal-content { border-radius:16px; }
+  .photo-modal .modal-body { background:#fff; padding:1rem; }
+  .photo-stack { max-width:760px; margin:0 auto; display:grid; gap:12px; grid-template-columns:1fr 1fr; }
+  .photo-stack img { width:100%; border-radius:12px; object-fit:cover; display:block; aspect-ratio: 4/3; }
+  .photo-stack img:nth-child(3n+1) { grid-column: span 2; aspect-ratio: 16/10; }
+  @media (max-width:575px) { .photo-stack { grid-template-columns:1fr; } .photo-stack img:nth-child(n) { grid-column:auto; } }
+
+  /* ---------- details + booking card ---------- */
+  .listing-layout { display:grid; grid-template-columns: minmax(0,1fr) 340px; gap:4rem; margin-top:2rem; }
+  @media (max-width: 991px) { .listing-layout { grid-template-columns:1fr; gap:1.5rem; } }
+  .meta { color:var(--muted); }
+  .host-row { display:flex; align-items:center; gap:.9rem; padding:1.25rem 0; border-block:1px solid var(--line); margin:1.25rem 0; }
+  .avatar {
+    width:48px; height:48px; border-radius:50%; display:grid; place-items:center; flex:none;
+    background: linear-gradient(135deg,#ff385c,#e31c5f 55%,#bd1e59); color:#fff; font-weight:600; font-size:1.1rem;
+  }
+  .avatar.sm { width:44px; height:44px; font-size:1rem; }
+  .price-card {
+    position:sticky; top:96px; border:1px solid var(--line); border-radius:16px; padding:1.5rem;
+    box-shadow:0 6px 20px rgba(0,0,0,.12); align-self:start;
+  }
+  .price-card .price { font-size:1.4rem; font-weight:600; }
+  .price-card .price small { font-size:1rem; font-weight:400; color:var(--muted); }
+  .btn-brand { background:linear-gradient(90deg,#e61e4d,#d70466); color:#fff; border:0; border-radius:8px; padding:.8rem; width:100%; font-weight:600; }
+  .btn-brand:hover { color:#fff; filter:brightness(1.07); }
+
+  /* ---------- reviews ---------- */
+  .reviews-head { display:flex; align-items:center; gap:.6rem; font-size:1.5rem; font-weight:600; margin:0 0 1.5rem; }
+  .reviews-head svg { width:22px; height:22px; fill:var(--ink); }
+  .summary { display:grid; grid-template-columns: 220px 1fr; gap:2rem; align-items:center; margin-bottom:2.5rem; }
+  @media (max-width:767px) { .summary { grid-template-columns:1fr; gap:1rem; } }
+  .big-score { font-size:3.5rem; font-weight:700; line-height:1; color:var(--ink); }
+  .bar-row { display:flex; align-items:center; gap:.75rem; font-size:.85rem; color:var(--muted); }
+  .bar-row span:first-child { width:10px; }
+  .bar { flex:1; height:4px; border-radius:4px; background:var(--line); overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--ink); border-radius:4px; }
+  .bar-row span:last-child { width:22px; text-align:right; }
+
+  .review-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.25rem; }
+  @media (max-width:767px) { .review-grid { grid-template-columns:1fr; } }
+  .review-card {
+    border:1px solid var(--line); border-radius:16px; padding:1.25rem 1.4rem; background:#fff;
+    display:flex; flex-direction:column; gap:.75rem; transition: box-shadow .2s, border-color .2s;
+  }
+  .review-card:hover { box-shadow:0 6px 18px rgba(0,0,0,.08); border-color:#dcdcdc; }
+  .review-top { display:flex; align-items:center; gap:.8rem; }
+  .review-top h6 { margin:0; font-weight:600; }
+  .review-top small { color:var(--muted); }
+  .review-rating { display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--muted); }
+  .review-text { margin:0; line-height:1.55; color:var(--ink); display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
+  .review-actions { margin-top:auto; }
+  .review-actions button { border:0; background:none; color:var(--muted); font-size:.85rem; text-decoration:underline; padding:0; }
+  .review-actions button:hover { color:var(--brand); }
+  .no-reviews { text-align:center; padding:2rem; border:1px dashed var(--line); border-radius:16px; color:var(--muted); }
+
+  /* ---------- review form + star picker ---------- */
+  .review-form { border:1px solid var(--line); border-radius:16px; padding:1.5rem; margin-bottom:2.5rem; background:#fafafa; }
+  .rating-input { display:inline-flex; flex-direction:row-reverse; justify-content:flex-end; gap:4px; }
+  .rating-input input { position:absolute; opacity:0; pointer-events:none; }
+  .rating-input label { cursor:pointer; line-height:0; }
+  .rating-input label svg { width:34px; height:34px; fill:#e3e3e3; stroke:#cfcfcf; stroke-width:1; transition: transform .15s, fill .15s; }
+  .rating-input input:checked ~ label svg,
+  .rating-input label:hover svg,
+  .rating-input label:hover ~ label svg { fill:var(--brand); stroke:var(--brand); }
+  .rating-input label:hover svg { transform: scale(1.18); }
+  .rating-input input:focus-visible + label svg { outline:2px solid var(--ink); outline-offset:2px; border-radius:6px; }
+  .rating-hint { font-size:.85rem; color:var(--muted); margin-left:.75rem; }
+  .was-validated .rating-input:has(input:invalid) { outline:1px dashed #dc3545; outline-offset:6px; border-radius:6px; }
+</style>
+
+<div class="listing-page">
+
+  <h1 class="listing-title"><%= listing.title %></h1>
+
+  <!-- ================= GALLERY ================= -->
+  <% if (images.length) { %>
+    <section class="gallery" aria-label="Photos of <%= listing.title %>">
+      <div class="gallery-grid" data-count="<%= shown.length >= 5 ? 5 : shown.length %>">
+        <% shown.forEach((img, i) => { %>
+          <button type="button" class="tile" data-index="<%= i %>" data-bs-toggle="modal" data-bs-target="#photoModal" aria-label="Open photo <%= i + 1 %>">
+            <img src="<%= optimize(img.url, i === 0 ? 1200 : 600) %>" alt="<%= listing.title %> photo <%= i + 1 %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>">
+          </button>
+        <% }) %>
       </div>
+      <button type="button" class="show-all-btn" data-index="0" data-bs-toggle="modal" data-bs-target="#photoModal">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/></svg>
+        <%= images.length > 1 ? `Show all ${images.length} photos` : "View photo" %>
+      </button>
+    </section>
 
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="details">
-            <h4 style="color: gray;"><%= listing.title %></h4><br>
-            <h5 style="color: darkgray;">Your Host : <%= listing.owner.username%></h5><hr>
-            <p class="introduction" id="description"><%= listing.description %></p>
-            <div class="read_more" style="display: none;">
-              <p><%= listing.description %></p>
-              <hr>
-              <div class="category mt-2 mb-2 ">
-                <div class="item_">
-                  <div class="ico"><i class="fa-solid fa-bed"></i></i></div>
-                  <div class="name">2 Bedroom</div>
-                </div>
-                <div class="item_">
-                  <div class="ico"><i class="fa-solid fa-bath"></i></i></div>
-                  <div class="name">2 Bathroom</div>
-                </div>
-                <div class="item_">
-                  <div class="ico"><i class="fa-solid fa-umbrella-beach"></i></div>
-                  <div class="name">1 Kitchen</div>
-                </div>
-              </div>
-              <hr>
+    <!-- all photos dialog -->
+    <div class="modal fade photo-modal" id="photoModal" tabindex="-1" aria-label="All photos">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h6 class="modal-title mx-auto"><%= listing.title %> · <%= images.length %> photos</h6>
+            <span style="width:1em"></span>
           </div>
-          
-          <button class="read-more cont btn btn-dark btn-sm">READ MORE</button>
-          <button class="read-less cont btn btn-dark btn-sm" style="display: none;">READ LESS</button>
-          <hr>
-            
-            <p>Price: &#8377;<%= listing.price.toLocaleString("en-IN") %> / night</p><hr>
-            <p>Location: <%= listing.location %></p><hr>
-            <p>Country: <%= listing.country %></p>
-          </div>
-          <% if (curruser && curruser._id.equals(listing.owner._id)){  %> 
-          <div class="mt-4">
-            <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">Edit this Listing</a>
-            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
-              <button type="submit" class="btn btn-danger" style="background-color: #ff385c;">Delete this listing</button>
-            </form>
-          </div>
-          <% } %>
-        </div>
-
-
-
-        <div class="col-md-5" style="margin-left: 5.2rem; align-items: center;">
-          <div class="card mt-3" style="padding: 1rem; box-shadow: 10px 10px 5px rgba(139, 136, 136, 0.438);  ">
-            
-          
-            
-            <div class="card-body">
-              <h5 class="card-title">&#8377;<%= listing.price.toLocaleString("en-IN") %> / night</h5><hr>
-              <form action="">
-                <div class="mb-3">
-                  <label for="date" class="form-label">Enter Date</label>
-                  <input type="date"  name="Booked[date]" class="form-control" id="date"  required />
-                </div>
-                
-                <div class="mb-3">
-                  <label for="days" class="form-label">Stay For Days</label>
-                  <input type="number" name="Booked[days]" class="form-control" id="days"  required />
-                </div>
-              </form>
-              
-              <a href="#" class="btn btn-danger">Book The Hotel</a>
+          <div class="modal-body">
+            <div class="photo-stack">
+              <% images.forEach((img, i) => { %>
+                <img id="photo-<%= i %>" src="<%= optimize(img.url, 1000) %>" alt="<%= listing.title %> photo <%= i + 1 %>" loading="lazy">
+              <% }) %>
             </div>
           </div>
         </div>
       </div>
-      
     </div>
+  <% } else { %>
+    <div class="gallery-empty">No photos uploaded yet</div>
+  <% } %>
 
-<hr>
-<h4 style="text-align: center; color: #ff385c;">All Reviews</h4>
-<div class="all-review">      
-    <% for(review of listing.reviews){ %>
-        <div style="margin: 10px;" class="card over-f col-4">
-          <div class="card-header" style="border: none;">
-            <i  style="color: gray;"  class="fa-solid fa-star"></i>  <%= review.rating %>.0 
-          </div>
-          <div class="card-body">
-            <p class="card-text pad"><%= review.comment %></p>
-            <div class="card-title pad">@<%=  review.author.username%></div>  
-          </div>
-          <div class="dlt-btn">
-            <% if(curruser && curruser._id.equals(listing.owner._id)){  %> 
-              <form class="mt-3" method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
-               <button style="margin-bottom: 1rem;" class="btn btn-sm btn-dark pad" type="submit">Delete</button>
-             </form>
-             <% } %>
-          </div>
+  <!-- ================= DETAILS ================= -->
+  <div class="listing-layout">
+    <section>
+      <h2 class="h4 fw-semibold mb-1"><%= listing.location %>, <%= listing.country %></h2>
+      <div class="meta d-flex align-items-center gap-2">
+        <% if (total) { %>
+          <span class="stars"><%- STAR %></span><strong class="text-dark"><%= avg.toFixed(2) %></strong>
+          <span>· <%= total %> review<%= total > 1 ? "s" : "" %></span>
+        <% } else { %><span>No reviews yet</span><% } %>
+      </div>
+
+    
+<div class="host-row">
+
+    <% if (listing.owner && listing.owner.profilePhoto && listing.owner.profilePhoto.url) { %>
+
+        <img
+            src="<%= listing.owner.profilePhoto.url %>"
+            alt="<%= listing.owner.username %>"
+            class="avatar"
+            style="object-fit: cover;"
+        >
+
+    <% } else { %>
+
+        <div class="avatar">
+            <%= (
+                listing.owner && listing.owner.username
+                    ? listing.owner.username[0]
+                    : "?"
+            ).toUpperCase() %>
         </div>
 
     <% } %>
-  
+
+    <div>
+        <div class="fw-semibold">
+            Hosted by
+            <%= listing.owner ? listing.owner.username : "Unknown" %>
+        </div>
+
+        <% if (listing.owner && listing.owner.description) { %>
+            <div class="meta small mt-1">
+                <%= listing.owner.description %>
+            </div>
+        <% } %>
+
+        <% if (listing.owner) { %>
+            <a
+                href="/<%= listing.owner._id %>"
+                class="small text-decoration-underline text-dark"
+            >
+                View profile
+            </a>
+        <% } %>
+    </div>
+    <% if (curruser && listing.owner && !listing.owner._id.equals(curruser._id)) { %>
+
+    <a
+        href="/chat/listing/<%= listing._id %>"
+        class="btn btn-dark btn-sm mt-2"
+    >
+        <i class="fa-regular fa-comment"></i>
+        Message host
+    </a>
+
+<% } %>
 </div>
-<hr>
-<!-- all rules -->
-<div id="features" class="text-center">
-  <div class="container">
-    <div class="section-title">
-      <h2>Things to know</h2>
-    </div>
-    <div class="row">
-      <div class="col-xs-12 col-sm-4">
-        <div class="features-item">
-          <h3>House rules</h3>
-          <img src="" class="img-responsive" alt="">
-          <p>
-            Check-in after 2:00 pm
-            Checkout before 12:00 pm
-            2 guests maximum
-          </p>
-           </div>
-      </div>
-      <div class="col-xs-12 col-sm-4">
-        <div class="features-item">
-          <h3>Safety & property</h3>
-          <img src="img/specials/2.jpg" class="img-responsive" alt="">
-          <p>
-            Carbon monoxide alarm not reported
-            Smoke alarm
-            Some spaces are shared
-          </p>
+
+
+      <p style="white-space:pre-line; line-height:1.65;"><%= listing.description %></p>
+
+      <% if (isOwner) { %>
+        <div class="d-flex gap-2 mt-4">
+          <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark btn-sm">Edit listing</a>
+          <form method="post" action="/listings/<%= listing._id %>?_method=DELETE" onsubmit="return confirm('Delete this listing?')">
+            <button class="btn btn-outline-danger btn-sm">Delete</button>
+          </form>
         </div>
+      <% } %>
+    </section>
+
+    <aside>
+      <div class="price-card">
+        <div class="price">&#8377;<%= (listing.price || 0).toLocaleString("en-IN") %> <small>night</small></div>
+        <button class="btn-brand mt-3" type="button">Reserve</button>
+        <p class="text-center meta small mt-2 mb-0">You won't be charged yet</p>
       </div>
-      <div class="col-xs-12 col-sm-4">
-        <div class="features-item">
-          <h3>Cancellation policy</h3>
-          <img src="img/specials/3.jpg" class="img-responsive" alt="">
-          <p>Free cancellation before 30 Jun.
-            Review the Host's full cancellation policy which applies even if you cancel for illness or disruptions caused by COVID-19.
-          </p>
-        </div>
-      </div>
-    </div>
+    </aside>
   </div>
+  <!-- ================= MAP ================= -->
+<section class="listing-map-section mt-5">
+    <h3 class="h4 fw-semibold mb-3">Where you'll be</h3>
+
+    <div
+        id="listing-map"
+        style="
+            width: 100%;
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #ebebeb;
+        "
+    ></div>
+</section>
+  <hr class="my-5">
+
+  <!-- ================= REVIEWS ================= -->
+  <section id="reviews">
+
+    <% if (curruser) { %>
+      <form action="/listings/<%= listing._id %>/reviews" method="post" class="review-form needs-validation" novalidate>
+        <h4 class="mb-3 fw-semibold">Leave a review</h4>
+
+        <div class="mb-3">
+          <div class="rating-input" id="ratingInput" role="radiogroup" aria-label="Rating">
+            <% [5,4,3,2,1].forEach(n => { %>
+              <input type="radio" id="star<%= n %>" name="review[rating]" value="<%= n %>" required>
+              <label for="star<%= n %>" title="<%= ["","Terrible","Not good","Average","Very good","Amazing"][n] %>"><%- STAR %><span class="visually-hidden"><%= n %> stars</span></label>
+            <% }) %>
+          </div>
+          <span class="rating-hint" id="ratingHint">Tap a star to rate</span>
+        </div>
+
+        <div class="mb-3">
+          <label for="comment" class="form-label">Your experience</label>
+          <textarea name="review[comment]" id="comment" rows="4" class="form-control" placeholder="What did you like? What could be better?" required></textarea>
+          <div class="invalid-feedback">Please write a short comment and pick a rating.</div>
+        </div>
+        <button type="submit" class="btn btn-dark">Submit review</button>
+      </form>
+    <% } %>
+
+    <% if (total) { %>
+      <h3 class="reviews-head"><%- STAR %> <%= avg.toFixed(2) %> · <%= total %> review<%= total > 1 ? "s" : "" %></h3>
+
+      <div class="summary">
+        <div>
+          <div class="big-score"><%= avg.toFixed(1) %></div>
+          <div class="stars lg mt-2">
+            <% for (let s = 1; s <= 5; s++) { %><%- STAR.replace("<svg", s <= Math.round(avg) ? "<svg" : '<svg class="off"') %><% } %>
+          </div>
+        </div>
+        <div class="d-grid gap-1">
+          <% counts.forEach((c, idx) => { %>
+            <div class="bar-row">
+              <span><%= 5 - idx %></span>
+              <% const pct = total ? Math.round((c / total) * 100) : 0; %>
+              <div class="bar"><i <%- `style="width:${pct}%"` %>></i></div>
+              <span><%= c %></span>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="review-grid">
+        <% reviews.slice().reverse().forEach(review => {
+             const name = review.author && review.author.username ? review.author.username : "Guest";
+        %>
+          <article class="review-card">
+            <div class="review-top">
+              <div class="avatar sm"><%= name[0].toUpperCase() %></div>
+              <div>
+                <h6>@<%= name %></h6>
+                <small><%= review.createdate ? new Date(review.createdate).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "" %></small>
+              </div>
+            </div>
+            <div class="review-rating">
+              <span class="stars" role="img" aria-label="<%= review.rating %> out of 5 stars">
+                <% for (let s = 1; s <= 5; s++) { %><%- STAR.replace("<svg", s <= review.rating ? "<svg" : '<svg class="off"') %><% } %>
+              </span>
+            </div>
+            <p class="review-text"><%= review.comment %></p>
+
+            <% if (curruser && review.author && review.author._id.equals(curruser._id)) { %>
+              <form class="review-actions" method="post" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                <button type="submit">Delete</button>
+              </form>
+            <% } %>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="no-reviews">No reviews yet. Be the first to share your stay.</div>
+    <% } %>
+  </section>
 </div>
 
-<hr>
-
-<% if (curruser){  %> 
-    <h4 ml-5 style="text-align: center; color: #ff385c;">Leave a Review:</h4>
-      <form action="/listings/<%= listing._id %>/reviews" method="post" class=" needs-validation" novalidate >
-          <div class="rating-stars mb-3 mt-3">
-              <label for="rating" class="form-label"><h5>Rating</h5></label>
-              <br>
-              <fieldset class="starability-slot">
-                  <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
-            <input type="radio" id="first-rate1" name="review[rating]" value="1" />
-            <label for="first-rate1" title="Terrible">1 star</label>
-            <input type="radio" id="first-rate2" name="review[rating]" value="2" />
-            <label for="first-rate2" title="Not good">2 stars</label>
-            <input type="radio" id="first-rate3" name="review[rating]" value="3" />
-            <label for="first-rate3" title="Average">3 stars</label>
-            <input type="radio" id="first-rate4" name="review[rating]" value="4" />
-            <label for="first-rate4" title="Very good">4 stars</label>
-            <input type="radio" id="first-rate5" name="review[rating]" value="5" />
-            <label for="first-rate5" title="Amazing">5 stars</label>
-              </fieldset>
-          </div>
-          <div class="rating-comments">
-              <label for="comment"><h5 style="color: gray;">Comment</h5></label>
-              <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
-              <div class="invalid-feedback">please submit a valid comment...</div>
-          </div>
-
-          <div class="button">
-              <button type="submit" class="btn btn-sm btn-dark pad mt-3 mb-3"  >Submit</button>
-          </div>
-      </form>
-  <hr>
-  <% } %>
-
-  <script src="/js/read_more.js"></script>
-    <style>
-      .all-review{
-    display: flex;
-    background-color: #FAFAFA;
-    margin: 10px;
-    justify-content: space-between;
-    /* flex-wrap: wrap; */
-    overflow: hidden;
-    overflow-x: auto;
-    
-    /* scrollbar-track-color: #FAFAFA;
-    scrollbar-color: #FAFAFA; */
-    border-radius: 4px;
-
-
-}
-.over-f{
-    overflow: hidden;
-    overflow-x: auto;
-}
-      .details {
-        margin-top: 20px;
-      }
-      .card{
-    border: none !important;
-    border: 1px solid darkgray !important;
-    background-color: #FAFAFA;
-    margin-left: 5px;
-    margin-right: 5px;
-    margin-bottom: 10px !important;
-    height: 300px !important;
+<script>
+  (function () {
+    /* open the photo dialog at the photo that was clicked */
+    const modalEl = document.getElementById("photoModal");
+    if (modalEl) {
+      let target = 0;
+      document.querySelectorAll("[data-bs-target='#photoModal']").forEach(el =>
+        el.addEventListener("click", () => { target = Number(el.dataset.index || 0); })
+      );
+      modalEl.addEventListener("shown.bs.modal", () => {
+        const img = document.getElementById("photo-" + target);
+        if (img) img.scrollIntoView({ block: "start" });
+      });
     }
-      .pad{
-        padding-left: 10px;
-      }
 
-      .iamg{
-        height: 100%;
-        width: 100%;
-      }
-      .gallery {
-      display: flex;
-      gap: 10px;
-      max-width: 1200px;
-      width: 100%;
-      height: 600px; /* Adjust as needed */
-    }
-    .left, .right {
-      position: relative;
-      overflow: hidden;
-       /* Rounded corners */
-    }
-    .left {
-      flex: 2;
-      background-color: #ff5a5f; /* Red for testing */
-    }
-    .right {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .top, .bottom {
-      flex: 1;
-      background-color: #00a699; /* Green for testing */
-       /* Rounded corners */
-    }
-    .top {
-      background-color: #484848; /* Dark grey for testing */
-    }
-    </style>
-  <script>
-    (function () {
-      'use strict';
+    /* rating label text */
+    const words = { 1: "Terrible", 2: "Not good", 3: "Average", 4: "Very good", 5: "Amazing" };
+    const hint = document.getElementById("ratingHint");
+    document.querySelectorAll("#ratingInput input").forEach(r =>
+      r.addEventListener("change", () => { hint.textContent = words[r.value]; })
+    );
+  })();
+</script>
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
-      var forms = document.querySelectorAll('.needs-validation');
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
 
-      // Loop over them and prevent submission
-      Array.prototype.slice.call(forms)
-        .forEach(function (form) {
-          form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
+<script>
+    const coordinates = <%- JSON.stringify(listing.geometry.coordinates) %>;
 
-            form.classList.add('was-validated');
-          }, false);
-        });
-    })();
-  </script>
+    const longitude = coordinates[0];
+    const latitude = coordinates[1];
 
+    const map = L.map("listing-map").setView(
+        [latitude, longitude],
+        13
+    );
 
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }
+    ).addTo(map);
 
+    L.marker([latitude, longitude])
+        .addTo(map)
+        .bindPopup(
+            `<strong><%= listing.title %></strong><br>
+             <%= listing.location %>, <%= listing.country %>`
+        )
+        .openPopup();
+</script>

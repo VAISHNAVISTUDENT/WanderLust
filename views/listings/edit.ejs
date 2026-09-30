@@ -1,82 +1,552 @@
+
 <% layout("/layouts/boilerplate.ejs") %>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Edit your Listing</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+  <link
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  >
+
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+  <style>
+
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    .existing-image {
+      height: 150px;
+      width: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    #coordinates {
+      margin-top: 10px;
+      color: #555;
+      font-size: 14px;
+    }
+
+  </style>
+
 </head>
+
+
 <body>
-  <div class="mt-3 container ">
-    <h3 class="mb-5">Edit your Listing</h3>
-    <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="needs-validation" novalidate enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="title">Title</label>
-        <input name="listing[title]" value="<%= listing.title %>" type="text" class="form-control" id="title">
-        <div class="invalid-feedback">Title is required.</div>
-      </div>
-      <br />
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea name="listing[description]" class="form-control" id="description" required><%= listing.description %></textarea>
-        <div class="invalid-feedback">Description is required.</div>
-      </div>
-      <br />
 
-      
+  <div class="mt-3 container">
+
+    <h3 class="mb-5">
+      Edit your Listing
+    </h3>
+
+
+    <form
+      method="POST"
+      action="/listings/<%= listing._id %>?_method=PUT"
+      class="needs-validation"
+      novalidate
+      enctype="multipart/form-data"
+    >
+
+
+      <!-- TITLE -->
 
       <div class="form-group">
-        <label for="image">Image</label>
-        <input name="listing[image]"  type="file" class="form-control" id="image">
+
+        <label for="title">
+          Title
+        </label>
+
+        <input
+          name="listing[title]"
+          value="<%= listing.title %>"
+          type="text"
+          class="form-control"
+          id="title"
+          required
+        >
+
+        <div class="invalid-feedback">
+          Title is required.
+        </div>
+
       </div>
-      <br />
+
+
+      <br>
+
+
+      <!-- DESCRIPTION -->
+
       <div class="form-group">
-        <label for="price">Price</label>
-        <input name="listing[price]" value="<%= listing.price %>" type="number" class="form-control" id="price" required>
-        <div class="invalid-feedback">Price is required.</div>
+
+        <label for="description">
+          Description
+        </label>
+
+        <textarea
+          name="listing[description]"
+          class="form-control"
+          id="description"
+          required
+        ><%= listing.description %></textarea>
+
+        <div class="invalid-feedback">
+          Description is required.
+        </div>
+
       </div>
-      <br />
+
+
+      <br>
+
+
+      <!-- EXISTING IMAGES -->
+
       <div class="form-group">
-        <label for="country">Country</label>
-        <input name="listing[country]" value="<%= listing.country %>" type="text" class="form-control" id="country" required>
-        <div class="invalid-feedback">Country is required.</div>
+
+        <label>
+          Current Images
+        </label>
+
+        <div class="row">
+
+          <% if (listing.images && listing.images.length > 0) { %>
+
+            <% listing.images.forEach(function(image) { %>
+
+              <div class="col-md-3 col-sm-4 col-6 mb-3">
+
+                <img
+                  src="<%= image.url %>"
+                  class="existing-image"
+                  alt="Listing image"
+                >
+
+              </div>
+
+            <% }) %>
+
+          <% } else { %>
+
+            <p class="text-muted ml-3">
+              No images uploaded.
+            </p>
+
+          <% } %>
+
+        </div>
+
       </div>
-      <br />
+
+
+      <!-- ADD IMAGES -->
+
       <div class="form-group">
-        <label for="location">Location</label>
-        <input name="listing[location]" value="<%= listing.location %>" type="text" class="form-control" id="location" required>
-        <div class="invalid-feedback">Location is required.</div>
+
+        <label for="images">
+          Add More Images
+        </label>
+
+        <input
+          name="listing[images]"
+          type="file"
+          class="form-control"
+          id="images"
+          accept="image/*"
+          multiple
+        >
+
+        <small class="form-text text-muted">
+          Select additional images. Existing images will not be removed.
+        </small>
+
       </div>
-      <br />
-      <button type="submit" style="background-color: #ff385c;" class="btn btn-danger mb-3">Edit</button>
+
+
+      <!-- NEW IMAGE PREVIEW -->
+
+      <div
+        id="imagePreview"
+        class="row mb-3"
+      ></div>
+
+
+      <br>
+
+
+      <!-- PRICE -->
+
+      <div class="form-group">
+
+        <label for="price">
+          Price
+        </label>
+
+        <input
+          name="listing[price]"
+          value="<%= listing.price %>"
+          type="number"
+          class="form-control"
+          id="price"
+          required
+        >
+
+        <div class="invalid-feedback">
+          Price is required.
+        </div>
+
+      </div>
+
+
+      <br>
+
+
+      <!-- COUNTRY -->
+
+      <div class="form-group">
+
+        <label for="country">
+          Country
+        </label>
+
+        <input
+          name="listing[country]"
+          value="<%= listing.country %>"
+          type="text"
+          class="form-control"
+          id="country"
+          required
+        >
+
+        <div class="invalid-feedback">
+          Country is required.
+        </div>
+
+      </div>
+
+
+      <br>
+
+
+      <!-- LOCATION -->
+
+      <div class="form-group">
+
+        <label for="location">
+          Location
+        </label>
+
+        <input
+          name="listing[location]"
+          value="<%= listing.location %>"
+          type="text"
+          class="form-control"
+          id="location"
+          required
+        >
+
+        <div class="invalid-feedback">
+          Location is required.
+        </div>
+
+      </div>
+
+
+      <br>
+
+
+      <!-- MAP -->
+
+      <div class="form-group">
+
+        <label>
+          Listing Location
+        </label>
+
+        <p class="text-muted">
+          Click on the map to change the exact location of your listing.
+        </p>
+
+        <div id="map"></div>
+
+        <div id="coordinates"></div>
+
+      </div>
+
+
+      <!-- COORDINATES -->
+
+      <input
+        type="hidden"
+        name="listing[latitude]"
+        id="latitude"
+        value="<%= listing.geometry.coordinates[1] %>"
+      >
+
+      <input
+        type="hidden"
+        name="listing[longitude]"
+        id="longitude"
+        value="<%= listing.geometry.coordinates[0] %>"
+      >
+
+
+      <br>
+
+
+      <button
+        type="submit"
+        style="background-color: #ff385c;"
+        class="btn btn-danger mb-3"
+      >
+        Edit
+      </button>
+
     </form>
+
   </div>
+
+
   <script>
+
+
+    // =====================================
+    // BOOTSTRAP VALIDATION
+    // =====================================
+
     (function () {
+
       'use strict';
 
-      // Fetch all the forms we want to apply custom Bootstrap validation styles to
       var forms = document.querySelectorAll('.needs-validation');
 
-      // Loop over them and prevent submission
       Array.prototype.slice.call(forms)
         .forEach(function (form) {
-          form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
 
-            form.classList.add('was-validated');
-          }, false);
+          form.addEventListener(
+            'submit',
+            function (event) {
+
+              if (!form.checkValidity()) {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+              }
+
+              form.classList.add('was-validated');
+
+            },
+            false
+          );
+
         });
-    })();
-  </script>
-</body>
-</html>
 
+    })();
+
+
+
+    // =====================================
+    // IMAGE PREVIEW
+    // =====================================
+
+    const imageInput = document.getElementById("images");
+
+    const imagePreview = document.getElementById("imagePreview");
+
+
+    imageInput.addEventListener("change", function () {
+
+      imagePreview.innerHTML = "";
+
+      const files = Array.from(this.files);
+
+
+      files.forEach(function (file) {
+
+        if (!file.type.startsWith("image/")) {
+          return;
+        }
+
+
+        const reader = new FileReader();
+
+
+        reader.onload = function (event) {
+
+          const column = document.createElement("div");
+
+          column.className = "col-md-3 col-sm-4 col-6 mb-3";
+
+
+          column.innerHTML = `
+            <img
+              src="${event.target.result}"
+              style="
+                height:150px;
+                width:200px;
+                object-fit:cover;
+                border-radius:8px;
+              "
+              alt="New image"
+            >
+          `;
+
+
+          imagePreview.appendChild(column);
+
+        };
+
+
+        reader.readAsDataURL(file);
+
+      });
+
+    });
+
+
+
+    // =====================================
+    // MAP
+    // =====================================
+
+    const existingLatitude =
+      <%= listing.geometry.coordinates[1] %>;
+
+    const existingLongitude =
+      <%= listing.geometry.coordinates[0] %>;
+
+
+    // Create map centered on existing listing location
+
+    const map = L.map("map").setView(
+      [
+        existingLatitude,
+        existingLongitude
+      ],
+      13
+    );
+
+
+    // OpenStreetMap tiles
+
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        attribution:
+          '&copy; OpenStreetMap contributors'
+      }
+    ).addTo(map);
+
+
+    // Existing marker
+
+    let marker = L.marker([
+      existingLatitude,
+      existingLongitude
+    ])
+    .addTo(map);
+
+
+    marker
+      .bindPopup("Current listing location")
+      .openPopup();
+
+
+    // Display current coordinates
+
+    document.getElementById("coordinates").innerHTML = `
+      <strong>Selected Coordinates:</strong><br>
+      Latitude: ${existingLatitude.toFixed(6)}<br>
+      Longitude: ${existingLongitude.toFixed(6)}
+    `;
+
+
+
+    // =====================================
+    // CHANGE LOCATION BY CLICKING MAP
+    // =====================================
+
+    map.on("click", function (event) {
+
+      const latitude = event.latlng.lat;
+
+      const longitude = event.latlng.lng;
+
+
+      // Remove old marker
+
+      map.removeLayer(marker);
+
+
+      // Add new marker
+
+      marker = L.marker([
+        latitude,
+        longitude
+      ])
+      .addTo(map);
+
+
+      marker
+        .bindPopup("New listing location")
+        .openPopup();
+
+
+      // Update hidden fields
+
+      document.getElementById("latitude").value =
+        latitude;
+
+      document.getElementById("longitude").value =
+        longitude;
+
+
+      // Update displayed coordinates
+
+      document.getElementById("coordinates").innerHTML = `
+        <strong>Selected Coordinates:</strong><br>
+        Latitude: ${latitude.toFixed(6)}<br>
+        Longitude: ${longitude.toFixed(6)}
+      `;
+
+    });
+
+  </script>
+
+</body>
+
+</html>
 

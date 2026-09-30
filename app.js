@@ -13,7 +13,7 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 
-const MONGO_URL = process.env.MONGO_URL;
+const MONGO_URL = process.env.ATLASDB_URL;
 
 const ExpressError = require("./utils/ExpressError.js");
 

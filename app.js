@@ -12,8 +12,8 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 
-// const MONGO_URL = process.env.ATLASDB_URL;
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const MONGO_URL = process.env.ATLASDB_URL;
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
 const ExpressError = require("./utils/ExpressError.js");
 const listingRouter = require("./Routes/listing.js");

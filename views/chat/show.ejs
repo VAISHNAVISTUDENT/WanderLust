@@ -14,19 +14,22 @@
     const listing = conversation.listing;
 
     const fmtTime = d =>
-        d
-            ? new Date(d).toLocaleTimeString("en-IN", {
-                  hour: "numeric",
-                  minute: "2-digit"
-              })
-            : "";
+    d
+        ? new Date(d).toLocaleTimeString("en-IN", {
+              timeZone: "Asia/Kolkata",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true
+          })
+        : "";
 
     const fmtDay = d =>
-        new Date(d).toLocaleDateString("en-IN", {
-            weekday: "long",
-            day: "numeric",
-            month: "short"
-        });
+    new Date(d).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        weekday: "long",
+        day: "numeric",
+        month: "short"
+    });
 
     let lastDay = "";
 %>
@@ -608,10 +611,11 @@
 
     // Join this conversation's room
 
-    socket.emit(
-        "joinConversation",
-        conversationId
-    );
+    // Join this conversation's room (also re-joins after a reconnect)
+
+socket.on("connect", () => {
+    socket.emit("joinConversation", conversationId);
+});
 
 
     // ==========================================
@@ -984,14 +988,15 @@
 
 
         time.textContent =
-            date.toLocaleTimeString(
-                "en-IN",
-                {
-                    hour: "numeric",
-                    minute: "2-digit"
-                }
-            );
-
+    date.toLocaleTimeString(
+        "en-IN",
+        {
+            timeZone: "Asia/Kolkata",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+        }
+    );
 
         bubble.appendChild(time);
 
